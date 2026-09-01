@@ -480,10 +480,29 @@ export const analyzeCSV = async (req, res) => {
       const bank = (row['Banque'] || '').trim();
 
       if (!lastNameOrCompany) {
-        // Skip empty trailing rows
         const hasOtherData = Object.values(row).some(v => String(v).trim().length > 0);
         if (hasOtherData) {
-          errors.push({ line: rowNumber, error: 'Le champ "Nom ou raison sociale" est obligatoire.' });
+          errors.push({
+            line: rowNumber,
+            error: 'Nom ou raison sociale manquant ou colonne non détectée',
+            rawData: row,
+            draft: {
+              importNumber,
+              lastNameOrCompany: '',
+              firstName,
+              numberOfShares,
+              birthDate,
+              address,
+              wilaya,
+              nationalIdentificationNumber,
+              registrationNumber,
+              registrationIssueDate,
+              taxIdentificationNumber,
+              bank,
+              guestType: 'REGISTERED',
+              source: 'CSV'
+            }
+          });
         }
         return;
       }
