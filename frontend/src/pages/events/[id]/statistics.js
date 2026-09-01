@@ -70,7 +70,7 @@ export default function StatisticsPage() {
   const handleExportExcel = () => {
     if (!eventId) return;
     const token = localStorage.getItem('token');
-    window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/stats/export-excel/${eventId}?token=${token}`, '_blank');
+    window.open(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/stats/export-excel/${eventId}?token=${token}`, '_blank');
   };
 
   if (loading || !stats) {

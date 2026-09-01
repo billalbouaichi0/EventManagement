@@ -1,12 +1,21 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+const getSocketUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.startsWith('/')) {
+    return process.env.NEXT_PUBLIC_API_URL.replace('/api', '');
+  }
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  return 'http://127.0.0.1:5000';
+};
 
-export const socket = io(SOCKET_URL, {
+export const socket = io(getSocketUrl(), {
   autoConnect: false,
   reconnection: true,
   reconnectionAttempts: Infinity,
-  reconnectionDelay: 1000
+  reconnectionDelay: 1000,
+  path: '/socket.io'
 });
 
 export const connectSocket = () => {
