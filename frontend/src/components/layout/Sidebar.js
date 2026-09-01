@@ -200,10 +200,10 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
         </Avatar>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', lineHeight: 1.1, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
-            NVOTI <span style={{ color: '#2596be' }}>EVENT</span>
+            EL-MOULTAKA <span style={{ color: '#2596be' }}>APP</span>
           </Typography>
           <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.72rem', fontWeight: 500 }}>
-            Gestion & Accueil VIP
+            Gestion & Accueil des Invités
           </Typography>
         </Box>
       </Box>

@@ -133,7 +133,7 @@ export const exportGuestsExcel = async (req, res) => {
     });
 
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'NVOTI Event Platform';
+    workbook.creator = 'El-Moultaka App';
     workbook.created = new Date();
 
     const worksheet = workbook.addWorksheet('Liste des Invités');

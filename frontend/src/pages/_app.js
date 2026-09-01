@@ -24,7 +24,7 @@ export default function MyApp({ Component, pageProps }) {
   return (
     <>
       <Head>
-        <title>NVOTI Event — Gestion & Accueil des Invités</title>
+        <title>El-Moultaka App — Gestion & Accueil des Invités</title>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
       </Head>
       <QueryClientProvider client={queryClient}>

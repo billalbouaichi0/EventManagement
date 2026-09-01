@@ -91,7 +91,7 @@ export default function Login() {
               <Sparkles size={26} color="#ffffff" />
             </Avatar>
             <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
-              NVOTI <span style={{ color: '#2596be' }}>EVENT</span>
+              EL-MOULTAKA <span style={{ color: '#2596be' }}>APP</span>
             </Typography>
             <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5, fontWeight: 500 }}>
               Plateforme d'Accueil & Gestion des Invités

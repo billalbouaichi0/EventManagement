@@ -1,4 +1,4 @@
-# Plateforme de Gestion des Invités & Émargement Événementiel (NVOTI)
+# El-Moultaka App — Plateforme de Gestion des Invités & Émargement Événementiel
 
 Une application web complète, professionnelle et temps réel pour la gestion des invités, l'émargement rapide (check-in en moins de 15s), la détection des doublons CSV, l'impression de badges personnalisés (4.5cm × 6cm) et le suivi statistique lors d'événements à fort afflux.
 

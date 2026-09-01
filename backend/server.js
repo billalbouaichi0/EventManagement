@@ -71,7 +71,7 @@ async function startServer() {
     console.log('✅ Synchronisation des tables effectuée avec succès.');
 
     server.listen(PORT, () => {
-      console.log(`🚀 Serveur Backend NVOTI en cours d'exécution sur le port ${PORT}`);
+      console.log(`🚀 Serveur Backend El-Moultaka App en cours d'exécution sur le port ${PORT}`);
     });
   } catch (error) {
     console.error('❌ Impossible de démarrer le serveur:', error);

@@ -266,7 +266,7 @@ export default function BadgePrintPage() {
               {guest.refId}
             </Typography>
             <Typography sx={{ fontSize: '5pt', color: '#94a3b8', fontWeight: 500 }}>
-              {new Date().toLocaleDateString('fr-FR')} • NVOTI EVENT
+              {new Date().toLocaleDateString('fr-FR')} • EL-MOULTAKA APP
             </Typography>
           </Box>
         </Paper>
