@@ -490,7 +490,7 @@ export const analyzeCSV = async (req, res) => {
   bufferStream
     .pipe(csvParser({
       separator,
-      quote: false, // Prevents unescaped quotes from merging/swallowing subsequent lines
+      quote: '\0', // Utilise un caractère nul pour éviter que les guillemets isolés ne fusionnent les lignes
       mapHeaders: ({ header }) => header.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, ' ')
     }))
     .on('data', (rawRow) => {
