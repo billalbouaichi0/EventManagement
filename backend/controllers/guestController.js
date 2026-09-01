@@ -14,6 +14,25 @@ export const normalizeString = (str) => {
     .trim();
 };
 
+// Full data fingerprint generator to ensure exact 100% field equality for duplicate detection
+export const getFullGuestFingerprint = (g) => {
+  const norm = (v) => (v !== undefined && v !== null ? String(v).trim().toUpperCase() : '');
+  const shares = parseInt(String(g.numberOfShares || 0).replace(/[^0-9]/g, ''), 10) || 0;
+  return [
+    norm(g.lastNameOrCompany),
+    norm(g.firstName),
+    norm(g.nationalIdentificationNumber),
+    norm(g.registrationNumber),
+    norm(g.registrationIssueDate),
+    norm(g.taxIdentificationNumber),
+    norm(g.birthDate),
+    norm(g.address),
+    norm(g.wilaya),
+    norm(g.bank),
+    shares
+  ].join('||');
+};
+
 export const getSearchNormalized = (data) => {
   const parts = [
     data.lastNameOrCompany,
@@ -212,43 +231,42 @@ export const createGuest = async (req, res) => {
       return res.status(404).json({ error: 'Événement introuvable.' });
     }
 
-    // 1. Strict duplicate validation in the same event
+    // 1. Strict duplicate validation in the same event (ALL fields must be identical)
     const trimmedLast = String(lastNameOrCompany).trim();
     const trimmedFirst = firstName ? String(firstName).trim() : '';
     const trimmedNIN = nationalIdentificationNumber ? String(nationalIdentificationNumber).trim() : '';
     const trimmedRC = registrationNumber ? String(registrationNumber).trim() : '';
 
-    const duplicateConditions = [
-      {
-        lastNameOrCompany: trimmedLast,
-        firstName: trimmedFirst
-      }
-    ];
-
-    if (trimmedNIN) {
-      duplicateConditions.push({ nationalIdentificationNumber: trimmedNIN });
-    }
-    if (trimmedRC) {
-      duplicateConditions.push({ registrationNumber: trimmedRC });
-    }
-
-    const existingGuest = await Guest.findOne({
+    const existingCandidates = await Guest.findAll({
       where: {
         eventId: parseInt(eventId, 10),
-        [Op.or]: duplicateConditions
+        lastNameOrCompany: trimmedLast
       },
       transaction: t
     });
 
+    const newFingerprint = getFullGuestFingerprint({
+      lastNameOrCompany: trimmedLast,
+      firstName: trimmedFirst,
+      nationalIdentificationNumber: trimmedNIN,
+      registrationNumber: trimmedRC,
+      registrationIssueDate,
+      taxIdentificationNumber,
+      birthDate,
+      address,
+      wilaya,
+      bank,
+      numberOfShares
+    });
+
+    const existingGuest = existingCandidates.find(g => getFullGuestFingerprint(g) === newFingerprint);
+
     if (existingGuest) {
       await t.rollback();
-      let errorMsg = `Cet invité (${trimmedLast} ${trimmedFirst}) est déjà enregistré dans cet événement (Réf: ${existingGuest.refId}).`;
-      if (trimmedNIN && existingGuest.nationalIdentificationNumber === trimmedNIN) {
-        errorMsg = `Un invité avec ce Numéro d'Identification National (${trimmedNIN}) est déjà enregistré dans cet événement (${existingGuest.lastNameOrCompany} - ${existingGuest.refId}).`;
-      } else if (trimmedRC && existingGuest.registrationNumber === trimmedRC) {
-        errorMsg = `Un invité avec ce Registre de Commerce (${trimmedRC}) est déjà enregistré dans cet événement (${existingGuest.lastNameOrCompany} - ${existingGuest.refId}).`;
-      }
-      return res.status(409).json({ error: errorMsg, duplicateGuest: existingGuest });
+      return res.status(409).json({
+        error: `Un invité avec exactement toutes ces informations est déjà enregistré dans cet événement (Réf: ${existingGuest.refId}).`,
+        duplicateGuest: existingGuest
+      });
     }
 
     // 2. Generate unique global refId
@@ -343,32 +361,39 @@ export const updateGuest = async (req, res) => {
       return res.status(404).json({ error: 'Invité introuvable.' });
     }
 
-    // Check duplicate in same event if identifiers changed
+    // Check duplicate in same event if all data is 100% identical to another guest
     const targetLast = req.body.lastNameOrCompany !== undefined ? String(req.body.lastNameOrCompany).trim() : guest.lastNameOrCompany;
     const targetFirst = req.body.firstName !== undefined ? String(req.body.firstName).trim() : (guest.firstName || '');
     const targetNIN = req.body.nationalIdentificationNumber !== undefined ? String(req.body.nationalIdentificationNumber).trim() : (guest.nationalIdentificationNumber || '');
     const targetRC = req.body.registrationNumber !== undefined ? String(req.body.registrationNumber).trim() : (guest.registrationNumber || '');
 
-    const duplicateConditions = [
-      {
-        lastNameOrCompany: targetLast,
-        firstName: targetFirst
-      }
-    ];
-    if (targetNIN) duplicateConditions.push({ nationalIdentificationNumber: targetNIN });
-    if (targetRC) duplicateConditions.push({ registrationNumber: targetRC });
-
-    const existingDuplicate = await Guest.findOne({
+    const candidates = await Guest.findAll({
       where: {
         eventId: guest.eventId,
         id: { [Op.ne]: guest.id },
-        [Op.or]: duplicateConditions
+        lastNameOrCompany: targetLast
       }
     });
 
+    const updatedFingerprint = getFullGuestFingerprint({
+      lastNameOrCompany: targetLast,
+      firstName: targetFirst,
+      nationalIdentificationNumber: targetNIN,
+      registrationNumber: targetRC,
+      registrationIssueDate: req.body.registrationIssueDate !== undefined ? req.body.registrationIssueDate : guest.registrationIssueDate,
+      taxIdentificationNumber: req.body.taxIdentificationNumber !== undefined ? req.body.taxIdentificationNumber : guest.taxIdentificationNumber,
+      birthDate: req.body.birthDate !== undefined ? req.body.birthDate : guest.birthDate,
+      address: req.body.address !== undefined ? req.body.address : guest.address,
+      wilaya: req.body.wilaya !== undefined ? req.body.wilaya : guest.wilaya,
+      bank: req.body.bank !== undefined ? req.body.bank : guest.bank,
+      numberOfShares: req.body.numberOfShares !== undefined ? req.body.numberOfShares : guest.numberOfShares
+    });
+
+    const existingDuplicate = candidates.find(g => getFullGuestFingerprint(g) === updatedFingerprint);
+
     if (existingDuplicate) {
       return res.status(409).json({
-        error: `Impossible de modifier : un autre invité avec ces informations existe déjà dans cet événement (${existingDuplicate.lastNameOrCompany} ${existingDuplicate.firstName || ''} - Réf: ${existingDuplicate.refId}).`
+        error: `Impossible de modifier : un autre invité avec exactement ces mêmes informations existe déjà dans cet événement (Réf: ${existingDuplicate.refId}).`
       });
     }
 
@@ -442,22 +467,21 @@ export const analyzeCSV = async (req, res) => {
   let rowNumber = 1;
 
   // Retrieve existing guests from database if eventId is supplied
-  let existingNinSet = new Set();
-  let existingRcSet = new Set();
-  let existingNameSet = new Set();
+  const existingFingerprints = new Set();
 
   if (eventId) {
     try {
       const existingGuests = await Guest.findAll({
         where: { eventId: parseInt(eventId, 10) },
-        attributes: ['nationalIdentificationNumber', 'registrationNumber', 'lastNameOrCompany', 'firstName']
+        attributes: [
+          'lastNameOrCompany', 'firstName', 'nationalIdentificationNumber',
+          'registrationNumber', 'registrationIssueDate', 'taxIdentificationNumber',
+          'birthDate', 'address', 'wilaya', 'bank', 'numberOfShares'
+        ]
       });
 
       existingGuests.forEach(g => {
-        if (g.nationalIdentificationNumber) existingNinSet.add(String(g.nationalIdentificationNumber).trim());
-        if (g.registrationNumber) existingRcSet.add(String(g.registrationNumber).trim());
-        const fullName = `${String(g.lastNameOrCompany).trim().toUpperCase()} ${String(g.firstName || '').trim().toUpperCase()}`.trim();
-        existingNameSet.add(fullName);
+        existingFingerprints.add(getFullGuestFingerprint(g));
       });
     } catch (dbErr) {
       console.warn('Impossible de charger les invités existants pour la détection des doublons:', dbErr.message);
@@ -465,9 +489,7 @@ export const analyzeCSV = async (req, res) => {
   }
 
   // In-file uniqueness tracking sets
-  const fileNinSet = new Set();
-  const fileRcSet = new Set();
-  const fileNameSet = new Set();
+  const fileFingerprints = new Set();
 
   // Helper to clean quotes and trim
   const cleanVal = (val) => {
@@ -494,6 +516,7 @@ export const analyzeCSV = async (req, res) => {
       mapHeaders: ({ header }) => header.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, ' ')
     }))
     .on('data', (rawRow) => {
+      
       rowNumber++;
 
       // Clean keys and values in row
@@ -565,59 +588,48 @@ export const analyzeCSV = async (req, res) => {
         return;
       }
 
-      const fullName = `${lastNameOrCompany.toUpperCase()} ${(firstName || '').toUpperCase()}`.trim();
+      // Check 100% full-data duplicate against DB & within file
+      const currentFingerprint = getFullGuestFingerprint({
+        lastNameOrCompany,
+        firstName,
+        nationalIdentificationNumber,
+        registrationNumber,
+        registrationIssueDate,
+        taxIdentificationNumber,
+        birthDate,
+        address,
+        wilaya,
+        bank,
+        numberOfShares
+      });
 
-      // Check Duplicates in DB
       let isDuplicate = false;
       let dupReason = '';
-      let dupIdentifier = '';
+      let dupType = '';
 
-      if (nationalIdentificationNumber && existingNinSet.has(nationalIdentificationNumber)) {
+      if (existingFingerprints.has(currentFingerprint)) {
         isDuplicate = true;
-        dupReason = 'NIN déjà enregistré pour cet événement';
-        dupIdentifier = `NIN: ${nationalIdentificationNumber}`;
-      } else if (registrationNumber && existingRcSet.has(registrationNumber)) {
+        dupReason = 'Toutes les informations sont 100% identiques à un invité déjà enregistré en base';
+        dupType = 'DB_DUPLICATE';
+      } else if (fileFingerprints.has(currentFingerprint)) {
         isDuplicate = true;
-        dupReason = 'RC déjà enregistré pour cet événement';
-        dupIdentifier = `RC: ${registrationNumber}`;
-      } else if (existingNameSet.has(fullName)) {
-        isDuplicate = true;
-        dupReason = 'Nom & Prénom déjà enregistrés pour cet événement';
-        dupIdentifier = fullName;
-      }
-
-      // Check Duplicates within same file
-      if (!isDuplicate) {
-        if (nationalIdentificationNumber && fileNinSet.has(nationalIdentificationNumber)) {
-          isDuplicate = true;
-          dupReason = 'NIN en doublon dans le fichier';
-          dupIdentifier = `NIN: ${nationalIdentificationNumber}`;
-        } else if (registrationNumber && fileRcSet.has(registrationNumber)) {
-          isDuplicate = true;
-          dupReason = 'RC en doublon dans le fichier';
-          dupIdentifier = `RC: ${registrationNumber}`;
-        } else if (fileNameSet.has(fullName)) {
-          isDuplicate = true;
-          dupReason = 'Nom & Prénom en doublon dans le fichier';
-          dupIdentifier = fullName;
-        }
+        dupReason = 'Ligne strictement identique à une autre ligne du fichier CSV';
+        dupType = 'FILE_DUPLICATE';
       }
 
       if (isDuplicate) {
         duplicates.push({
           line: rowNumber,
           name: `${lastNameOrCompany} ${firstName}`.trim(),
-          identifier: dupIdentifier,
+          identifier: `Ligne 100% identique`,
           reason: dupReason,
-          type: existingNameSet.has(fullName) || (nationalIdentificationNumber && existingNinSet.has(nationalIdentificationNumber)) || (registrationNumber && existingRcSet.has(registrationNumber)) ? 'DB_DUPLICATE' : 'FILE_DUPLICATE'
+          type: dupType
         });
         return;
       }
 
-      // Record in file sets
-      if (nationalIdentificationNumber) fileNinSet.add(nationalIdentificationNumber);
-      if (registrationNumber) fileRcSet.add(registrationNumber);
-      fileNameSet.add(fullName);
+      // Record fingerprint in file set
+      fileFingerprints.add(currentFingerprint);
 
       const parsedGuest = {
         importNumber,
