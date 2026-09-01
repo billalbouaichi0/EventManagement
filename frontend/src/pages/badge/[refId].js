@@ -10,7 +10,7 @@ import {
   Chip,
   Paper
 } from '@mui/material';
-import { Printer, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Printer, ArrowLeft, Sparkles } from 'lucide-react';
 import api from '../../services/api';
 
 export default function BadgePrintPage() {
@@ -46,7 +46,7 @@ export default function BadgePrintPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc' }}>
+      <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', bgcolor: '#fbf9fc' }}>
         <CircularProgress sx={{ color: '#722083' }} />
       </Box>
     );
@@ -65,8 +65,10 @@ export default function BadgePrintPage() {
     ref: guest.refId,
     id: guest.id,
     name: `${guest.lastNameOrCompany} ${guest.firstName || ''}`.trim(),
-    event: guest.event?.name || 'Event'
+    event: guest.event?.name || 'BDL Event'
   });
+
+  const guestStatusText = guest.guestType === 'VIP' ? '★ VIP' : (guest.guestType === 'ORGANIZATION' ? 'ORGANISATION' : (guest.guestType === 'PRESS' ? 'PRESSE' : 'REGISTERED'));
 
   return (
     <>
@@ -75,12 +77,12 @@ export default function BadgePrintPage() {
         <style>{`
           @media print {
             @page {
-              size: 4.5cm 6cm;
+              size: 102mm 65mm landscape;
               margin: 0;
             }
             html, body {
-              width: 4.5cm !important;
-              height: 6cm !important;
+              width: 102mm !important;
+              height: 65mm !important;
               margin: 0 !important;
               padding: 0 !important;
               overflow: hidden !important;
@@ -94,11 +96,15 @@ export default function BadgePrintPage() {
             .badge-card {
               box-shadow: none !important;
               border: none !important;
-              width: 4.5cm !important;
-              height: 6cm !important;
+              width: 102mm !important;
+              height: 65mm !important;
+              min-width: 102mm !important;
+              max-width: 102mm !important;
+              min-height: 65mm !important;
+              max-height: 65mm !important;
               border-radius: 0 !important;
               margin: 0 !important;
-              padding: 6px !important;
+              padding: 4mm 6mm !important;
             }
           }
         `}</style>
@@ -108,7 +114,7 @@ export default function BadgePrintPage() {
       <Box
         className="no-print"
         sx={{
-          bgcolor: '#0f172a',
+          bgcolor: '#1e0824',
           p: 2,
           display: 'flex',
           justifyContent: 'space-between',
@@ -122,12 +128,12 @@ export default function BadgePrintPage() {
             size="small"
             onClick={() => window.close()}
             startIcon={<ArrowLeft size={16} />}
-            sx={{ color: '#ffffff', borderColor: '#334155' }}
+            sx={{ color: '#ffffff', borderColor: 'rgba(255, 255, 255, 0.3)' }}
           >
             Fermer
           </Button>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Aperçu Badge Officiel (Format Réel 4.5 × 6 cm)
+            Aperçu Badge Officiel Horizontal (102 mm × 65 mm)
           </Typography>
         </Box>
 
@@ -149,63 +155,98 @@ export default function BadgePrintPage() {
           alignItems: 'center',
           minHeight: 'calc(100vh - 70px)',
           bgcolor: '#fbf9fc',
-          p: 2
+          p: 3
         }}
       >
-        {/* Physical Badge Layout: EXACT 4.5cm x 6cm */}
+        {/* Physical Badge Layout: EXACT 102mm (10.2cm) x 65mm (6.5cm) */}
         <Paper
           className="badge-card badge-print-container"
           elevation={4}
           sx={{
-            width: '4.5cm',
-            height: '6cm',
+            width: '102mm',
+            height: '65mm',
+            minWidth: '102mm',
+            maxWidth: '102mm',
+            minHeight: '65mm',
+            maxHeight: '65mm',
             bgcolor: '#ffffff',
-            borderRadius: '6px',
+            borderRadius: '8px',
             border: '1px solid #f0e6f2',
-            p: '6px',
+            p: '4mm 6mm',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
+            alignItems: 'center',
             textAlign: 'center',
             boxSizing: 'border-box',
             position: 'relative',
             overflow: 'hidden'
           }}
         >
-          {/* Top Decorative Band: Violet with Golden Accent */}
+          {/* Top Decorative Border (Violet + Gold) */}
           <Box
             sx={{
               position: 'absolute',
               top: 0,
               left: 0,
               right: 0,
-              height: '5px',
+              height: '4px',
               bgcolor: '#722083',
               borderBottom: '1px solid #fdb700'
             }}
           />
 
-          {/* Event Header */}
-          <Box sx={{ pt: '4px' }}>
-            <Typography
-              sx={{
-                fontSize: '7.5pt',
-                fontWeight: 800,
-                color: '#1e0824',
-                lineHeight: 1.1,
-                textTransform: 'uppercase',
-                letterSpacing: '0.02em'
+          {/* 1. EN HAUT AU CENTRE : LOGO */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', pt: '1mm', mb: '1mm' }}>
+            <img
+              src="/logo-acronyme.png"
+              alt="Logo BDL"
+              style={{
+                height: '14mm',
+                maxWidth: '55mm',
+                objectFit: 'contain'
               }}
-            >
-              {guest.event?.name || 'ASSEMBLÉE GÉNÉRALE 2026'}
-            </Typography>
-            <Typography sx={{ fontSize: '5.5pt', color: '#64748b', fontWeight: 600, mt: '1px' }}>
-              {guest.event?.organizer || 'ACCUEIL OFFICIEL'}
-            </Typography>
+              onError={(e) => {
+                // Fallback if image path differs
+                e.target.src = '/LOGO-ACRONYME-.png';
+              }}
+            />
           </Box>
 
-          {/* Category Chip */}
-          <Box sx={{ my: '2px' }}>
+          {/* 2. JUSTE EN BAS : NOM ÉVÉNEMENT */}
+          <Typography
+            sx={{
+              fontSize: '8.5pt',
+              fontWeight: 800,
+              color: '#722083',
+              lineHeight: 1.15,
+              textTransform: 'uppercase',
+              letterSpacing: '0.03em',
+              maxWidth: '90mm',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {guest.event?.name || 'ASSEMBLÉE GÉNÉRALE 2026'}
+          </Typography>
+
+          {/* 3. EN BAS : BANQUE DE DÉVELOPPEMENT LOCAL - BDL */}
+          <Typography
+            sx={{
+              fontSize: '6.5pt',
+              fontWeight: 700,
+              color: '#475569',
+              lineHeight: 1.1,
+              letterSpacing: '0.02em',
+              textTransform: 'uppercase'
+            }}
+          >
+            Banque de Développement Local - BDL
+          </Typography>
+
+          {/* 4. EN BAS : STATUT / REGISTERED */}
+          <Box sx={{ my: '1mm' }}>
             <Box
               sx={{
                 display: 'inline-block',
@@ -214,61 +255,90 @@ export default function BadgePrintPage() {
                 border: guest.guestType === 'VIP' ? '1px solid #fde68a' : '1px solid #f0d6f7',
                 fontSize: '6.5pt',
                 fontWeight: 800,
-                px: '6px',
-                py: '1px',
-                borderRadius: '3px',
+                px: '8px',
+                py: '1.5px',
+                borderRadius: '4px',
+                letterSpacing: '0.05em',
                 textTransform: 'uppercase'
               }}
             >
-              {guest.guestType === 'VIP' ? '★ VIP' : guest.guestType || 'INVITÉ'}
+              {guestStatusText}
             </Box>
           </Box>
 
-          {/* Guest Identity Name */}
-          <Box sx={{ px: '2px' }}>
+          {/* 5. EN BAS : NOM & PRÉNOM (Très lisible) */}
+          <Box sx={{ width: '100%', px: '2mm', my: '0.5mm' }}>
             <Typography
               sx={{
-                fontSize: '9.5pt',
-                fontWeight: 800,
+                fontSize: '12pt',
+                fontWeight: 900,
                 color: '#1e0824',
                 lineHeight: 1.15,
                 wordBreak: 'break-word',
-                textTransform: 'uppercase'
+                textTransform: 'uppercase',
+                letterSpacing: '-0.01em'
               }}
             >
-              {guest.lastNameOrCompany}
+              {guest.lastNameOrCompany} {guest.firstName ? guest.firstName : ''}
             </Typography>
-            {guest.firstName && (
-              <Typography sx={{ fontSize: '8.5pt', fontWeight: 600, color: '#334155', lineHeight: 1.1 }}>
-                {guest.firstName}
-              </Typography>
-            )}
-            {guest.numberOfShares > 0 && (
-              <Typography sx={{ fontSize: '6pt', color: '#722083', fontWeight: 700, mt: '2px' }}>
-                {guest.numberOfShares.toLocaleString('fr-FR')} ACTIONS
-              </Typography>
-            )}
           </Box>
 
-          {/* QR Code */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: '2px' }}>
-            <QRCodeSVG
-              value={qrData}
-              size={56}
-              level="M"
-              includeMargin={false}
-              fgColor="#1e0824"
-            />
-          </Box>
+          {/* 6. PUIS : NOMBRE D'ACTIONS */}
+          {guest.numberOfShares > 0 ? (
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                bgcolor: '#fffbeb',
+                border: '1px solid #fde68a',
+                color: '#b45309',
+                px: '7px',
+                py: '1px',
+                borderRadius: '3px',
+                fontSize: '7pt',
+                fontWeight: 800,
+                letterSpacing: '0.02em'
+              }}
+            >
+              <span>{guest.numberOfShares.toLocaleString('fr-FR')} ACTIONS</span>
+            </Box>
+          ) : (
+            <Box sx={{ height: '4px' }} />
+          )}
 
-          {/* Footer Ref ID & Date */}
-          <Box sx={{ borderTop: '1px solid #f7eff9', pt: '3px' }}>
-            <Typography sx={{ fontSize: '7.5pt', fontWeight: 800, color: '#722083', letterSpacing: '0.04em' }}>
+          {/* 7. PUIS : LA RÉFÉRENCE & QR CODE EN BAS */}
+          <Box
+            sx={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderTop: '1px solid #f1e5f5',
+              pt: '1.5mm',
+              mt: '1mm'
+            }}
+          >
+            {/* Réf ID */}
+            <Typography sx={{ fontSize: '8pt', fontWeight: 900, color: '#722083', letterSpacing: '0.05em', fontFamily: 'monospace' }}>
               {guest.refId}
             </Typography>
-            <Typography sx={{ fontSize: '5pt', color: '#94a3b8', fontWeight: 500 }}>
+
+            {/* Date & Mention */}
+            <Typography sx={{ fontSize: '5.5pt', color: '#94a3b8', fontWeight: 600 }}>
               {new Date().toLocaleDateString('fr-FR')} • EL-MOULTAKA APP
             </Typography>
+
+            {/* Compact QR Code */}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <QRCodeSVG
+                value={qrData}
+                size={32}
+                level="M"
+                includeMargin={false}
+                fgColor="#1e0824"
+              />
+            </Box>
           </Box>
         </Paper>
       </Box>

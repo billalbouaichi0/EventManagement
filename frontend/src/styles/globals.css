@@ -41,16 +41,16 @@ a {
   background: #94a3b8;
 }
 
-/* Badge Print CSS (Exact Format 4.5 x 6 cm) */
+/* Badge Print CSS (Exact Format 102 mm x 65 mm Landscape) */
 @media print {
   @page {
-    size: 4.5cm 6cm;
+    size: 102mm 65mm landscape;
     margin: 0;
   }
 
   html, body {
-    width: 4.5cm !important;
-    height: 6cm !important;
+    width: 102mm !important;
+    height: 65mm !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: hidden !important;
@@ -64,8 +64,12 @@ a {
   }
 
   .badge-print-container {
-    width: 4.5cm !important;
-    height: 6cm !important;
+    width: 102mm !important;
+    height: 65mm !important;
+    min-width: 102mm !important;
+    max-width: 102mm !important;
+    min-height: 65mm !important;
+    max-height: 65mm !important;
     page-break-after: always;
     page-break-inside: avoid;
     box-shadow: none !important;
