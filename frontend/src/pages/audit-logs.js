@@ -76,7 +76,7 @@ export default function AuditLogsPage() {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                    <CircularProgress sx={{ color: '#2596be' }} />
+                    <CircularProgress sx={{ color: '#722083' }} />
                   </TableCell>
                 </TableRow>
               ) : logs.length === 0 ? (

@@ -41,7 +41,7 @@ import StatsCard from '../../../components/common/StatsCard';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 
-const COLORS = ['#2596be', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#3b82f6'];
+const COLORS = ['#722083', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#3b82f6'];
 
 export default function StatisticsPage() {
   const router = useRouter();
@@ -77,7 +77,7 @@ export default function StatisticsPage() {
     return (
       <AppLayout>
         <Box sx={{ p: 4, textAlign: 'center' }}>
-          <LinearProgress sx={{ color: '#2596be' }} />
+          <LinearProgress sx={{ color: '#722083' }} />
         </Box>
       </AppLayout>
     );
@@ -104,7 +104,7 @@ export default function StatisticsPage() {
           variant="contained"
           onClick={handleExportExcel}
           startIcon={<Download size={18} />}
-          sx={{ bgcolor: '#2596be', fontWeight: 700 }}
+          sx={{ bgcolor: '#722083', fontWeight: 700 }}
         >
           Exporter le Rapport Excel Complet
         </Button>
@@ -118,8 +118,8 @@ export default function StatisticsPage() {
             value={stats.totalGuests}
             subtitle="Base officielle"
             icon={Users}
-            color="#2596be"
-            lightBg="rgba(37, 150, 190, 0.08)"
+            color="#722083"
+            lightBg="rgba(114, 32, 131, 0.08)"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={2.4}>
@@ -187,7 +187,7 @@ export default function StatisticsPage() {
                       color: '#ffffff'
                     }}
                   />
-                  <Bar dataKey="count" fill="#2596be" radius={[6, 6, 0, 0]} name="Arrivées" />
+                  <Bar dataKey="count" fill="#722083" radius={[6, 6, 0, 0]} name="Arrivées" />
                 </BarChart>
               </ResponsiveContainer>
             </Box>
@@ -238,7 +238,7 @@ export default function StatisticsPage() {
         <Grid item xs={12} md={6}>
           <Card sx={{ borderRadius: 3.5, p: 2.5 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <MapPin size={18} color="#2596be" />
+              <MapPin size={18} color="#722083" />
               Répartition par Wilaya d'origine
             </Typography>
 
@@ -249,7 +249,7 @@ export default function StatisticsPage() {
                   <Box key={idx}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                       <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a' }}>{w.wilaya}</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#2596be' }}>{w.count} ({percent.toFixed(1)}%)</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#722083' }}>{w.count} ({percent.toFixed(1)}%)</Typography>
                     </Box>
                     <LinearProgress variant="determinate" value={percent} sx={{ height: 6, borderRadius: 3, bgcolor: '#f1f5f9' }} />
                   </Box>
@@ -263,7 +263,7 @@ export default function StatisticsPage() {
         <Grid item xs={12} md={6}>
           <Card sx={{ borderRadius: 3.5, p: 2.5 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Building size={18} color="#2596be" />
+              <Building size={18} color="#722083" />
               Répartition par Banque de Domiciliation
             </Typography>
 
@@ -274,7 +274,7 @@ export default function StatisticsPage() {
                   <Box key={idx}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                       <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a' }}>{b.bank}</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#2596be' }}>{b.count} ({percent.toFixed(1)}%)</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#722083' }}>{b.count} ({percent.toFixed(1)}%)</Typography>
                     </Box>
                     <LinearProgress variant="determinate" value={percent} sx={{ height: 6, borderRadius: 3, bgcolor: '#f1f5f9' }} />
                   </Box>

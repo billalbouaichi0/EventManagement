@@ -25,7 +25,7 @@ export default function AppLayout({ children, maxWidth = 'xl' }) {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc' }}>
-        <CircularProgress sx={{ color: '#2596be' }} />
+        <CircularProgress sx={{ color: '#722083' }} />
       </Box>
     );
   }

@@ -288,7 +288,7 @@ export default function ImportCSVPage() {
             <Button
               variant="contained"
               onClick={() => router.push(`/events/${eventId}/check-in`)}
-              sx={{ bgcolor: '#2596be', fontWeight: 700, px: 3 }}
+              sx={{ bgcolor: '#722083', fontWeight: 700, px: 3 }}
             >
               Aller au Guichet d'Émargement
             </Button>
@@ -322,8 +322,8 @@ export default function ImportCSVPage() {
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  borderColor: '#2596be',
-                  bgcolor: 'rgba(37, 150, 190, 0.02)'
+                  borderColor: '#722083',
+                  bgcolor: 'rgba(114, 32, 131, 0.02)'
                 }
               }}
               onClick={() => document.getElementById('csv-file-input').click()}
@@ -342,8 +342,8 @@ export default function ImportCSVPage() {
                     width: 64,
                     height: 64,
                     borderRadius: '16px',
-                    bgcolor: 'rgba(37, 150, 190, 0.1)',
-                    color: '#2596be',
+                    bgcolor: 'rgba(114, 32, 131, 0.1)',
+                    color: '#722083',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -372,7 +372,7 @@ export default function ImportCSVPage() {
           {analyzing && (
             <Grid item xs={12}>
               <Card sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
-                <LinearProgress sx={{ color: '#2596be', mb: 2 }} />
+                <LinearProgress sx={{ color: '#722083', mb: 2 }} />
                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#64748b' }}>
                   Vérification de la conformité, analyse des colonnes et détection des doublons en cours...
                 </Typography>
@@ -543,7 +543,7 @@ export default function ImportCSVPage() {
                                       size="small"
                                       onClick={() => handleOpenRectify(errItem)}
                                       startIcon={<Edit3 size={14} />}
-                                      sx={{ bgcolor: '#2596be', fontWeight: 700, fontSize: '0.72rem', textTransform: 'none' }}
+                                      sx={{ bgcolor: '#722083', fontWeight: 700, fontSize: '0.72rem', textTransform: 'none' }}
                                     >
                                       Rectifier
                                     </Button>
@@ -641,7 +641,7 @@ export default function ImportCSVPage() {
                         disabled={importing || analysisResult.validCount === 0}
                         onClick={handleConfirmImport}
                         startIcon={<CheckCircle size={18} />}
-                        sx={{ px: 4, py: 1.2, fontWeight: 800, bgcolor: '#2596be', '&:hover': { bgcolor: '#1d7899' } }}
+                        sx={{ px: 4, py: 1.2, fontWeight: 800, bgcolor: '#722083', '&:hover': { bgcolor: '#591766' } }}
                       >
                         {importing ? 'Importation en cours...' : `Confirmer l'Importation (${analysisResult.validCount} Invités)`}
                       </Button>
@@ -663,7 +663,7 @@ export default function ImportCSVPage() {
         PaperProps={{ sx: { borderRadius: 3.5, p: 1 } }}
       >
         <DialogTitle sx={{ fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Edit3 size={24} color="#2596be" />
+          <Edit3 size={24} color="#722083" />
           Rectification manuelle de la ligne #{selectedErrorRow?.line}
         </DialogTitle>
         <DialogContent dividers sx={{ borderColor: '#f1f5f9' }}>
@@ -781,7 +781,7 @@ export default function ImportCSVPage() {
             form="rectify-form"
             variant="contained"
             startIcon={<CheckCircle size={18} />}
-            sx={{ bgcolor: '#2596be', fontWeight: 700, px: 3 }}
+            sx={{ bgcolor: '#722083', fontWeight: 700, px: 3 }}
           >
             Valider et Ajouter à la Liste
           </Button>

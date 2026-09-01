@@ -129,8 +129,8 @@ export default function EventsPage() {
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   borderRadius: 3.5,
-                  border: isCurrent ? '2px solid #2596be' : '1px solid #e2e8f0',
-                  boxShadow: isCurrent ? '0 10px 25px -5px rgba(37, 150, 190, 0.15)' : 'none',
+                  border: isCurrent ? '2px solid #722083' : '1px solid #e2e8f0',
+                  boxShadow: isCurrent ? '0 10px 25px -5px rgba(114, 32, 131, 0.15)' : 'none',
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     transform: 'translateY(-3px)',
@@ -150,7 +150,7 @@ export default function EventsPage() {
                         color: evt.status === 'EN_COURS' ? '#059669' : '#475569'
                       }}
                     />
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#2596be' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#722083' }}>
                       {evt.refId}
                     </Typography>
                   </Box>
@@ -168,16 +168,16 @@ export default function EventsPage() {
 
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#475569', fontSize: '0.85rem' }}>
-                      <Calendar size={15} color="#2596be" />
+                      <Calendar size={15} color="#722083" />
                       <span>{new Date(evt.eventDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#475569', fontSize: '0.85rem' }}>
-                      <Clock size={15} color="#2596be" />
+                      <Clock size={15} color="#722083" />
                       <span>{evt.startTime || '08:30'} — {evt.endTime || '18:00'}</span>
                     </Box>
                     {evt.location && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#475569', fontSize: '0.85rem' }}>
-                        <MapPin size={15} color="#2596be" />
+                        <MapPin size={15} color="#722083" />
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{evt.location}</span>
                       </Box>
                     )}
@@ -196,8 +196,8 @@ export default function EventsPage() {
                     </Box>
                     <Box sx={{ width: '1px', bgcolor: '#e2e8f0' }} />
                     <Box sx={{ flex: 1, textAlign: 'center' }}>
-                      <Typography variant="caption" sx={{ color: '#2596be', display: 'block', fontSize: '0.7rem', fontWeight: 600 }}>Taux</Typography>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#2596be' }}>{evt.presenceRate || 0}%</Typography>
+                      <Typography variant="caption" sx={{ color: '#722083', display: 'block', fontSize: '0.7rem', fontWeight: 600 }}>Taux</Typography>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#722083' }}>{evt.presenceRate || 0}%</Typography>
                     </Box>
                   </Box>
                 </CardContent>

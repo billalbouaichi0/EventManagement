@@ -187,7 +187,7 @@ export default function CheckInPage() {
         particleCount: 80,
         spread: 60,
         origin: { y: 0.8 },
-        colors: ['#2596be', '#10b981', '#fbbf24']
+        colors: ['#722083', '#10b981', '#fbbf24']
       });
 
       setFeedback({
@@ -308,7 +308,7 @@ export default function CheckInPage() {
             <Chip
               label={workstation}
               size="small"
-              sx={{ bgcolor: 'rgba(37, 150, 190, 0.1)', color: '#2596be', fontWeight: 700 }}
+              sx={{ bgcolor: 'rgba(114, 32, 131, 0.1)', color: '#722083', fontWeight: 700 }}
             />
           </Box>
           <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5 }}>
@@ -348,7 +348,7 @@ export default function CheckInPage() {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        {isSearching ? <CircularProgress size={18} sx={{ color: '#2596be' }} /> : <Search size={20} color="#2596be" />}
+                        {isSearching ? <CircularProgress size={18} sx={{ color: '#722083' }} /> : <Search size={20} color="#722083" />}
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -398,10 +398,10 @@ export default function CheckInPage() {
                             sx={{
                               borderRadius: 2,
                               p: 1.5,
-                              bgcolor: isSelected ? 'rgba(37, 150, 190, 0.08)' : '#ffffff',
-                              border: isSelected ? '2px solid #2596be' : '1px solid #e2e8f0',
+                              bgcolor: isSelected ? 'rgba(114, 32, 131, 0.08)' : '#ffffff',
+                              border: isSelected ? '2px solid #722083' : '1px solid #e2e8f0',
                               '&:hover': {
-                                bgcolor: isSelected ? 'rgba(37, 150, 190, 0.12)' : '#f8fafc'
+                                bgcolor: isSelected ? 'rgba(114, 32, 131, 0.12)' : '#f8fafc'
                               }
                             }}
                           >
@@ -410,7 +410,7 @@ export default function CheckInPage() {
                                 width: 38,
                                 height: 38,
                                 mr: 1.5,
-                                bgcolor: isGuestPresent ? '#10b981' : '#2596be',
+                                bgcolor: isGuestPresent ? '#10b981' : '#722083',
                                 fontSize: '0.85rem',
                                 fontWeight: 700
                               }}
@@ -439,7 +439,7 @@ export default function CheckInPage() {
                               }
                               secondary={
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.3 }}>
-                                  <Typography variant="caption" sx={{ color: '#2596be', fontWeight: 600 }}>
+                                  <Typography variant="caption" sx={{ color: '#722083', fontWeight: 600 }}>
                                     {guest.refId}
                                   </Typography>
                                   {guest.bank && (
@@ -487,7 +487,7 @@ export default function CheckInPage() {
 
           {!selectedGuest ? (
             <Card sx={{ borderRadius: 3.5, p: 6, textAlign: 'center', bgcolor: '#ffffff' }}>
-              <Sparkles size={48} color="#2596be" style={{ marginBottom: 16, opacity: 0.6 }} />
+              <Sparkles size={48} color="#722083" style={{ marginBottom: 16, opacity: 0.6 }} />
               <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', mb: 1 }}>
                 En attente de sélection d'un invité
               </Typography>
@@ -515,7 +515,7 @@ export default function CheckInPage() {
                     sx={{
                       width: 60,
                       height: 60,
-                      bgcolor: isPresent ? '#10b981' : '#2596be',
+                      bgcolor: isPresent ? '#10b981' : '#722083',
                       fontSize: '1.4rem',
                       fontWeight: 800,
                       borderRadius: 3
@@ -531,7 +531,7 @@ export default function CheckInPage() {
                       <Chip
                         label={selectedGuest.refId}
                         size="small"
-                        sx={{ bgcolor: '#ffffff', color: '#2596be', fontWeight: 800, border: '1px solid #cbd5e1' }}
+                        sx={{ bgcolor: '#ffffff', color: '#722083', fontWeight: 800, border: '1px solid #cbd5e1' }}
                       />
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -554,8 +554,8 @@ export default function CheckInPage() {
                     disabled={isPrinting}
                     startIcon={<Printer size={18} />}
                     sx={{
-                      borderColor: '#2596be',
-                      color: '#2596be',
+                      borderColor: '#722083',
+                      color: '#722083',
                       fontWeight: 700,
                       py: 1,
                       px: 2

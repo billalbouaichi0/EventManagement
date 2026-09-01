@@ -137,19 +137,19 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
                       borderRadius: '8px',
                       py: 1,
                       px: 1.5,
-                      backgroundColor: isActive ? 'rgba(37, 150, 190, 0.1)' : 'transparent',
-                      color: isActive ? '#2596be' : '#475569',
-                      fontWeight: isActive ? 600 : 500,
+                      backgroundColor: isActive ? 'rgba(114, 32, 131, 0.08)' : 'transparent',
+                      color: isActive ? '#722083' : '#475569',
+                      fontWeight: isActive ? 700 : 500,
                       '&:hover': {
-                        backgroundColor: isActive ? 'rgba(37, 150, 190, 0.15)' : '#f1f5f9',
-                        color: isActive ? '#2596be' : '#0f172a'
+                        backgroundColor: isActive ? 'rgba(114, 32, 131, 0.12)' : '#f8f4f9',
+                        color: isActive ? '#722083' : '#1e0824'
                       }
                     }}
                   >
                     <ListItemIcon
                       sx={{
                         minWidth: 36,
-                        color: isActive ? '#2596be' : '#64748b'
+                        color: isActive ? '#722083' : '#64748b'
                       }}
                     >
                       <Icon size={19} />
@@ -158,7 +158,7 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
                       primary={item.title}
                       primaryTypographyProps={{
                         fontSize: '0.875rem',
-                        fontWeight: isActive ? 600 : 500
+                        fontWeight: isActive ? 700 : 500
                       }}
                     />
                     {item.badge && (
@@ -168,9 +168,9 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
                         sx={{
                           height: 20,
                           fontSize: '0.65rem',
-                          bgcolor: '#2596be',
-                          color: '#fff',
-                          fontWeight: 700
+                          bgcolor: '#fdb700',
+                          color: '#1e0824',
+                          fontWeight: 800
                         }}
                       />
                     )}
@@ -184,23 +184,23 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
   );
 
   const drawerContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#ffffff', borderRight: '1px solid #e2e8f0' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#ffffff', borderRight: '1px solid #f0e6f2' }}>
       {/* Brand Header */}
       <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <Avatar
           sx={{
-            bgcolor: '#2596be',
+            bgcolor: '#722083',
             width: 38,
             height: 38,
             borderRadius: '10px',
-            boxShadow: '0 4px 10px rgba(37, 150, 190, 0.3)'
+            boxShadow: '0 4px 12px rgba(114, 32, 131, 0.3)'
           }}
         >
-          <Sparkles size={20} color="#ffffff" />
+          <Sparkles size={20} color="#fdb700" />
         </Avatar>
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', lineHeight: 1.1, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
-            EL-MOULTAKA <span style={{ color: '#2596be' }}>APP</span>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e0824', lineHeight: 1.1, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
+            EL-MOULTAKA <span style={{ color: '#722083' }}>APP</span>
           </Typography>
           <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.72rem', fontWeight: 500 }}>
             Gestion & Accueil des Invités
@@ -208,18 +208,18 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
         </Box>
       </Box>
 
-      <Divider sx={{ mb: 2, borderColor: '#f1f5f9' }} />
+      <Divider sx={{ mb: 2, borderColor: '#f7eff9' }} />
 
       {/* Selected Event Indicator */}
       {selectedEvent && (
-        <Box sx={{ mx: 2, mb: 2, p: 1.5, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+        <Box sx={{ mx: 2, mb: 2, p: 1.5, bgcolor: '#fdf9ff', borderRadius: '8px', border: '1px solid #f0e6f2' }}>
           <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontWeight: 600, fontSize: '0.68rem', textTransform: 'uppercase' }}>
             Événement Actif
           </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.82rem' }}>
+          <Typography variant="body2" sx={{ fontWeight: 700, color: '#1e0824', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.82rem' }}>
             {selectedEvent.name}
           </Typography>
-          <Typography variant="caption" sx={{ color: '#2596be', fontWeight: 600, fontSize: '0.7rem' }}>
+          <Typography variant="caption" sx={{ color: '#722083', fontWeight: 700, fontSize: '0.7rem' }}>
             {selectedEvent.refId}
           </Typography>
         </Box>
@@ -232,12 +232,12 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
         {isAdmin && renderNavList(adminNavItems, 'Administration')}
       </Box>
 
-      <Divider sx={{ borderColor: '#f1f5f9' }} />
+      <Divider sx={{ borderColor: '#f7eff9' }} />
 
       {/* User Footer */}
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#f8fafc' }}>
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#fbf9fc' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, overflow: 'hidden' }}>
-          <Avatar sx={{ width: 34, height: 34, bgcolor: '#2596be', fontSize: '0.85rem', fontWeight: 700 }}>
+          <Avatar sx={{ width: 34, height: 34, bgcolor: '#722083', color: '#ffffff', fontSize: '0.85rem', fontWeight: 700 }}>
             {user?.fullName?.charAt(0) || 'U'}
           </Avatar>
           <Box sx={{ overflow: 'hidden' }}>

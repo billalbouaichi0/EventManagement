@@ -4,16 +4,16 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#2596be',
-      light: '#53b4d6',
-      dark: '#1b7495',
+      main: '#722083',
+      light: '#9133a4',
+      dark: '#531560',
       contrastText: '#ffffff'
     },
     secondary: {
-      main: '#0f172a',
-      light: '#334155',
-      dark: '#020617',
-      contrastText: '#ffffff'
+      main: '#fdb700',
+      light: '#fecb43',
+      dark: '#d99b00',
+      contrastText: '#1e0824'
     },
     success: {
       main: '#10b981',
@@ -22,10 +22,10 @@ const theme = createTheme({
       contrastText: '#ffffff'
     },
     warning: {
-      main: '#f59e0b',
-      light: '#fbbf24',
-      dark: '#d97706',
-      contrastText: '#ffffff'
+      main: '#fdb700',
+      light: '#fecb43',
+      dark: '#d99b00',
+      contrastText: '#1e0824'
     },
     error: {
       main: '#ef4444',
@@ -34,19 +34,19 @@ const theme = createTheme({
       contrastText: '#ffffff'
     },
     info: {
-      main: '#2596be',
-      light: '#67e8f9',
-      dark: '#0e7490'
+      main: '#722083',
+      light: '#9133a4',
+      dark: '#531560'
     },
     background: {
-      default: '#f8fafc',
+      default: '#fbf9fc',
       paper: '#ffffff'
     },
     text: {
-      primary: '#0f172a',
+      primary: '#1e0824',
       secondary: '#64748b'
     },
-    divider: '#e2e8f0'
+    divider: '#f0e6f2'
   },
   typography: {
     fontFamily: '"Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -73,13 +73,22 @@ const theme = createTheme({
           padding: '8px 18px',
           boxShadow: 'none',
           '&:hover': {
-            boxShadow: '0 4px 12px rgba(37, 150, 190, 0.2)'
+            boxShadow: '0 4px 12px rgba(114, 32, 131, 0.25)'
           }
         },
         containedPrimary: {
-          background: 'linear-gradient(135deg, #2596be 0%, #1b7495 100%)',
+          background: 'linear-gradient(135deg, #722083 0%, #531560 100%)',
+          color: '#ffffff',
           '&:hover': {
-            background: 'linear-gradient(135deg, #2a9ec6 0%, #176582 100%)'
+            background: 'linear-gradient(135deg, #842898 0%, #461151 100%)'
+          }
+        },
+        containedSecondary: {
+          background: 'linear-gradient(135deg, #fdb700 0%, #e09f00 100%)',
+          color: '#1e0824',
+          fontWeight: 700,
+          '&:hover': {
+            background: 'linear-gradient(135deg, #ffc226 0%, #c98e00 100%)'
           }
         }
       }
@@ -119,10 +128,10 @@ const theme = createTheme({
             borderColor: '#e2e8f0'
           },
           '&:hover fieldset': {
-            borderColor: '#2596be'
+            borderColor: '#722083'
           },
           '&.Mui-focused fieldset': {
-            borderColor: '#2596be',
+            borderColor: '#722083',
             borderWidth: 2
           }
         }

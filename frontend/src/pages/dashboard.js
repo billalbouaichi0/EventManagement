@@ -135,7 +135,7 @@ export default function Dashboard() {
               width: 200,
               height: 200,
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(37, 150, 190, 0.3) 0%, rgba(37, 150, 190, 0) 70%)',
+              background: 'radial-gradient(circle, rgba(114, 32, 131, 0.3) 0%, rgba(114, 32, 131, 0) 70%)',
               pointerEvents: 'none'
             }}
           />
@@ -147,7 +147,7 @@ export default function Dashboard() {
                   label={selectedEvent?.status || 'EN_COURS'}
                   size="small"
                   sx={{
-                    bgcolor: '#2596be',
+                    bgcolor: '#722083',
                     color: '#ffffff',
                     fontWeight: 700,
                     fontSize: '0.72rem'
@@ -165,13 +165,13 @@ export default function Dashboard() {
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, color: '#cbd5e1', fontSize: '0.85rem' }}>
                 {selectedEvent?.eventDate && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                    <Calendar size={16} color="#2596be" />
+                    <Calendar size={16} color="#722083" />
                     <span>{new Date(selectedEvent.eventDate).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
                   </Box>
                 )}
                 {selectedEvent?.location && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                    <MapPin size={16} color="#2596be" />
+                    <MapPin size={16} color="#722083" />
                     <span>{selectedEvent.location}</span>
                   </Box>
                 )}
@@ -186,15 +186,15 @@ export default function Dashboard() {
                   onClick={() => router.push(`/events/${selectedEvent.id}/check-in`)}
                   startIcon={<UserCheck size={20} />}
                   sx={{
-                    bgcolor: '#2596be',
+                    bgcolor: '#722083',
                     color: '#ffffff',
                     fontWeight: 700,
                     px: 3,
                     py: 1.4,
                     fontSize: '0.95rem',
                     borderRadius: 2.5,
-                    boxShadow: '0 8px 20px rgba(37, 150, 190, 0.4)',
-                    '&:hover': { bgcolor: '#1b7495' }
+                    boxShadow: '0 8px 20px rgba(114, 32, 131, 0.4)',
+                    '&:hover': { bgcolor: '#531560' }
                   }}
                 >
                   Ouvrir Guichet Émargement
@@ -212,8 +212,8 @@ export default function Dashboard() {
               value={stats.totalGuests}
               subtitle="Liste officielle importée"
               icon={Users}
-              color="#2596be"
-              lightBg="rgba(37, 150, 190, 0.08)"
+              color="#722083"
+              lightBg="rgba(114, 32, 131, 0.08)"
             />
           </Grid>
 
@@ -281,7 +281,7 @@ export default function Dashboard() {
                       size="small"
                       onClick={() => router.push(`/events/${selectedEvent.id}/attendances`)}
                       endIcon={<ArrowRight size={14} />}
-                      sx={{ color: '#2596be', fontWeight: 600, fontSize: '0.8rem' }}
+                      sx={{ color: '#722083', fontWeight: 600, fontSize: '0.8rem' }}
                     >
                       Voir tout
                     </Button>
@@ -311,7 +311,7 @@ export default function Dashboard() {
                               <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                                 {att.guest?.lastNameOrCompany} {att.guest?.firstName || ''}
                               </Typography>
-                              <Typography variant="caption" sx={{ color: '#2596be', fontWeight: 600 }}>
+                              <Typography variant="caption" sx={{ color: '#722083', fontWeight: 600 }}>
                                 {att.guest?.refId}
                               </Typography>
                             </TableCell>
@@ -362,14 +362,14 @@ export default function Dashboard() {
                         <Box key={ag.agentId || index} sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0' }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.8 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Avatar sx={{ width: 28, height: 28, bgcolor: '#2596be', fontSize: '0.75rem', fontWeight: 700 }}>
+                              <Avatar sx={{ width: 28, height: 28, bgcolor: '#722083', fontSize: '0.75rem', fontWeight: 700 }}>
                                 {ag.agentName.charAt(0)}
                               </Avatar>
                               <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                                 {ag.agentName}
                               </Typography>
                             </Box>
-                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#2596be' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#722083' }}>
                               {ag.checkInCount} émargements
                             </Typography>
                           </Box>
@@ -380,7 +380,7 @@ export default function Dashboard() {
                               height: 6,
                               borderRadius: 3,
                               bgcolor: '#e2e8f0',
-                              '& .MuiLinearProgress-bar': { bgcolor: '#2596be', borderRadius: 3 }
+                              '& .MuiLinearProgress-bar': { bgcolor: '#722083', borderRadius: 3 }
                             }}
                           />
                         </Box>

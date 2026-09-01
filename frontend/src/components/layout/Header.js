@@ -180,7 +180,7 @@ export default function Header({ handleDrawerToggle }) {
                 color: '#475569'
               }}
             >
-              <Clock size={15} color="#2596be" />
+              <Clock size={15} color="#722083" />
               <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.04em' }}>
                 {currentTime}
               </Typography>
@@ -211,15 +211,15 @@ export default function Header({ handleDrawerToggle }) {
                 setTempPrinter(printerName);
                 setSettingsOpen(true);
               }}
-              startIcon={<Monitor size={15} color="#2596be" />}
+              startIcon={<Monitor size={15} color="#722083" />}
               sx={{
-                borderColor: '#e2e8f0',
-                color: '#334155',
-                bgcolor: '#f8fafc',
+                borderColor: '#f0e6f2',
+                color: '#1e0824',
+                bgcolor: '#fdf9ff',
                 fontSize: '0.8rem',
                 fontWeight: 600,
                 display: { xs: 'none', md: 'inline-flex' },
-                '&:hover': { bgcolor: '#f1f5f9', borderColor: '#cbd5e1' }
+                '&:hover': { bgcolor: '#fbf4fd', borderColor: '#e2cfe7' }
               }}
             >
               {workstation}
@@ -237,7 +237,7 @@ export default function Header({ handleDrawerToggle }) {
         PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
       >
         <DialogTitle sx={{ fontWeight: 700, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Settings size={20} color="#2596be" />
+          <Settings size={20} color="#722083" />
           Configuration du Poste d'accueil
         </DialogTitle>
         <DialogContent>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, Avatar } from '@mui/material';
 
-export default function StatsCard({ title, value, subtitle, icon: Icon, color = '#2596be', lightBg = 'rgba(37, 150, 190, 0.08)' }) {
+export default function StatsCard({ title, value, subtitle, icon: Icon, color = '#722083', lightBg = 'rgba(114, 32, 131, 0.08)' }) {
   return (
     <Card
       sx={{

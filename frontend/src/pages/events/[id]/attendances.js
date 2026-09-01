@@ -154,7 +154,7 @@ export default function AttendancesPage() {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
-                    <CircularProgress sx={{ color: '#2596be' }} />
+                    <CircularProgress sx={{ color: '#722083' }} />
                   </TableCell>
                 </TableRow>
               ) : attendances.length === 0 ? (
@@ -168,7 +168,7 @@ export default function AttendancesPage() {
                   <TableRow key={att.id} hover>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Clock size={15} color="#2596be" />
+                        <Clock size={15} color="#722083" />
                         <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                           {new Date(att.checkedInAt).toLocaleTimeString('fr-FR')}
                         </Typography>
@@ -181,7 +181,7 @@ export default function AttendancesPage() {
                       <Chip
                         label={att.guest?.refId || `INV-${att.guestId}`}
                         size="small"
-                        sx={{ fontWeight: 700, bgcolor: '#f8fafc', color: '#2596be', border: '1px solid #e2e8f0' }}
+                        sx={{ fontWeight: 700, bgcolor: '#f8fafc', color: '#722083', border: '1px solid #e2e8f0' }}
                       />
                     </TableCell>
                     <TableCell>
@@ -199,7 +199,7 @@ export default function AttendancesPage() {
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Avatar sx={{ width: 24, height: 24, bgcolor: '#2596be', fontSize: '0.7rem', fontWeight: 700 }}>
+                        <Avatar sx={{ width: 24, height: 24, bgcolor: '#722083', fontSize: '0.7rem', fontWeight: 700 }}>
                           {att.agent?.fullName?.charAt(0) || 'A'}
                         </Avatar>
                         <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 600 }}>

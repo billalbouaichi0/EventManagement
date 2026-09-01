@@ -64,7 +64,7 @@ export default function GuestDetailModal({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Avatar
             sx={{
-              bgcolor: isPresent ? '#10b981' : '#2596be',
+              bgcolor: isPresent ? '#10b981' : '#722083',
               width: 56,
               height: 56,
               borderRadius: 2.5,
@@ -83,7 +83,7 @@ export default function GuestDetailModal({
               <Chip
                 label={guest.refId}
                 size="small"
-                sx={{ bgcolor: '#ffffff', fontWeight: 700, color: '#2596be', border: '1px solid #cbd5e1' }}
+                sx={{ bgcolor: '#ffffff', fontWeight: 700, color: '#722083', border: '1px solid #cbd5e1' }}
               />
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
@@ -154,7 +154,7 @@ export default function GuestDetailModal({
           {/* Identity & Shares */}
           <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <Award size={18} color="#2596be" style={{ marginTop: 2 }} />
+              <Award size={18} color="#722083" style={{ marginTop: 2 }} />
               <Box>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>Nombre d'actions</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 700, color: '#0f172a' }}>
@@ -166,7 +166,7 @@ export default function GuestDetailModal({
 
           <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <Calendar size={18} color="#2596be" style={{ marginTop: 2 }} />
+              <Calendar size={18} color="#722083" style={{ marginTop: 2 }} />
               <Box>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>Date de naissance</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: '#0f172a' }}>
@@ -178,7 +178,7 @@ export default function GuestDetailModal({
 
           <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <CreditCard size={18} color="#2596be" style={{ marginTop: 2 }} />
+              <CreditCard size={18} color="#722083" style={{ marginTop: 2 }} />
               <Box>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>NIN (Identité Nationale)</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: '#0f172a' }}>
@@ -191,7 +191,7 @@ export default function GuestDetailModal({
           {/* Legal / Company details */}
           <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <Building size={18} color="#2596be" style={{ marginTop: 2 }} />
+              <Building size={18} color="#722083" style={{ marginTop: 2 }} />
               <Box>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>RC / N° Agrément</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: '#0f172a' }}>
@@ -203,7 +203,7 @@ export default function GuestDetailModal({
 
           <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <Calendar size={18} color="#2596be" style={{ marginTop: 2 }} />
+              <Calendar size={18} color="#722083" style={{ marginTop: 2 }} />
               <Box>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>Date délivrance RC</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: '#0f172a' }}>
@@ -215,7 +215,7 @@ export default function GuestDetailModal({
 
           <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <FileText size={18} color="#2596be" style={{ marginTop: 2 }} />
+              <FileText size={18} color="#722083" style={{ marginTop: 2 }} />
               <Box>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>NIF (Fiscal)</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: '#0f172a' }}>
@@ -228,7 +228,7 @@ export default function GuestDetailModal({
           {/* Location & Bank */}
           <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <Building size={18} color="#2596be" style={{ marginTop: 2 }} />
+              <Building size={18} color="#722083" style={{ marginTop: 2 }} />
               <Box>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>Banque</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: '#0f172a' }}>
@@ -240,7 +240,7 @@ export default function GuestDetailModal({
 
           <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <MapPin size={18} color="#2596be" style={{ marginTop: 2 }} />
+              <MapPin size={18} color="#722083" style={{ marginTop: 2 }} />
               <Box>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>Wilaya</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: '#0f172a' }}>
@@ -252,7 +252,7 @@ export default function GuestDetailModal({
 
           <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <MapPin size={18} color="#2596be" style={{ marginTop: 2 }} />
+              <MapPin size={18} color="#722083" style={{ marginTop: 2 }} />
               <Box>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>Adresse</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: '#0f172a' }}>
@@ -305,7 +305,7 @@ export default function GuestDetailModal({
             onClick={() => onPrintBadge(guest)}
             disabled={isPrinting}
             startIcon={<Printer size={18} />}
-            sx={{ borderColor: '#2596be', color: '#2596be' }}
+            sx={{ borderColor: '#722083', color: '#722083' }}
           >
             {isPresent ? 'Réimprimer Badge' : 'Imprimer Badge'}
           </Button>

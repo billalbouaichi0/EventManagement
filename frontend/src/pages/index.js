@@ -19,7 +19,7 @@ export default function Index() {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc' }}>
-      <CircularProgress sx={{ color: '#2596be' }} />
+      <CircularProgress sx={{ color: '#722083' }} />
     </Box>
   );
 }

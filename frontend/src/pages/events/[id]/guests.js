@@ -262,7 +262,7 @@ export default function GuestsPage() {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
-                    <CircularProgress sx={{ color: '#2596be' }} />
+                    <CircularProgress sx={{ color: '#722083' }} />
                   </TableCell>
                 </TableRow>
               ) : guests.length === 0 ? (
@@ -281,7 +281,7 @@ export default function GuestsPage() {
                         <Chip
                           label={g.refId}
                           size="small"
-                          sx={{ fontWeight: 700, bgcolor: '#f8fafc', color: '#2596be', border: '1px solid #e2e8f0' }}
+                          sx={{ fontWeight: 700, bgcolor: '#f8fafc', color: '#722083', border: '1px solid #e2e8f0' }}
                         />
                       </TableCell>
                       <TableCell>
@@ -324,7 +324,7 @@ export default function GuestsPage() {
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
                           <IconButton size="small" onClick={() => handleOpenDetail(g)} title="Voir la fiche">
-                            <Eye size={18} color="#2596be" />
+                            <Eye size={18} color="#722083" />
                           </IconButton>
                           <IconButton size="small" onClick={() => handlePrintBadge(g)} title="Imprimer le badge">
                             <Printer size={18} color="#64748b" />

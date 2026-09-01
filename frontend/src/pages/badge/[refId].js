@@ -47,7 +47,7 @@ export default function BadgePrintPage() {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc' }}>
-        <CircularProgress sx={{ color: '#2596be' }} />
+        <CircularProgress sx={{ color: '#722083' }} />
       </Box>
     );
   }
@@ -135,7 +135,7 @@ export default function BadgePrintPage() {
           variant="contained"
           onClick={() => window.print()}
           startIcon={<Printer size={18} />}
-          sx={{ bgcolor: '#2596be', fontWeight: 700 }}
+          sx={{ bgcolor: '#722083', '&:hover': { bgcolor: '#591766' }, fontWeight: 700 }}
         >
           Lancer l'impression
         </Button>
@@ -148,7 +148,7 @@ export default function BadgePrintPage() {
           justifyContent: 'center',
           alignItems: 'center',
           minHeight: 'calc(100vh - 70px)',
-          bgcolor: '#f1f5f9',
+          bgcolor: '#fbf9fc',
           p: 2
         }}
       >
@@ -161,7 +161,7 @@ export default function BadgePrintPage() {
             height: '6cm',
             bgcolor: '#ffffff',
             borderRadius: '6px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid #f0e6f2',
             p: '6px',
             display: 'flex',
             flexDirection: 'column',
@@ -172,7 +172,7 @@ export default function BadgePrintPage() {
             overflow: 'hidden'
           }}
         >
-          {/* Top Decorative Band */}
+          {/* Top Decorative Band: Violet with Golden Accent */}
           <Box
             sx={{
               position: 'absolute',
@@ -180,7 +180,8 @@ export default function BadgePrintPage() {
               left: 0,
               right: 0,
               height: '5px',
-              bgcolor: '#2596be'
+              bgcolor: '#722083',
+              borderBottom: '1px solid #fdb700'
             }}
           />
 
@@ -190,7 +191,7 @@ export default function BadgePrintPage() {
               sx={{
                 fontSize: '7.5pt',
                 fontWeight: 800,
-                color: '#0f172a',
+                color: '#1e0824',
                 lineHeight: 1.1,
                 textTransform: 'uppercase',
                 letterSpacing: '0.02em'
@@ -208,9 +209,9 @@ export default function BadgePrintPage() {
             <Box
               sx={{
                 display: 'inline-block',
-                bgcolor: guest.guestType === 'VIP' ? '#fef3c7' : '#e0f2fe',
-                color: guest.guestType === 'VIP' ? '#92400e' : '#0369a1',
-                border: guest.guestType === 'VIP' ? '1px solid #fde68a' : '1px solid #bae6fd',
+                bgcolor: guest.guestType === 'VIP' ? '#fef3c7' : '#fcf4ff',
+                color: guest.guestType === 'VIP' ? '#92400e' : '#722083',
+                border: guest.guestType === 'VIP' ? '1px solid #fde68a' : '1px solid #f0d6f7',
                 fontSize: '6.5pt',
                 fontWeight: 800,
                 px: '6px',
@@ -229,7 +230,7 @@ export default function BadgePrintPage() {
               sx={{
                 fontSize: '9.5pt',
                 fontWeight: 800,
-                color: '#0f172a',
+                color: '#1e0824',
                 lineHeight: 1.15,
                 wordBreak: 'break-word',
                 textTransform: 'uppercase'
@@ -243,7 +244,7 @@ export default function BadgePrintPage() {
               </Typography>
             )}
             {guest.numberOfShares > 0 && (
-              <Typography sx={{ fontSize: '6pt', color: '#2596be', fontWeight: 700, mt: '2px' }}>
+              <Typography sx={{ fontSize: '6pt', color: '#722083', fontWeight: 700, mt: '2px' }}>
                 {guest.numberOfShares.toLocaleString('fr-FR')} ACTIONS
               </Typography>
             )}
@@ -256,13 +257,13 @@ export default function BadgePrintPage() {
               size={56}
               level="M"
               includeMargin={false}
-              fgColor="#0f172a"
+              fgColor="#1e0824"
             />
           </Box>
 
           {/* Footer Ref ID & Date */}
-          <Box sx={{ borderTop: '1px solid #f1f5f9', pt: '3px' }}>
-            <Typography sx={{ fontSize: '7.5pt', fontWeight: 800, color: '#2596be', letterSpacing: '0.04em' }}>
+          <Box sx={{ borderTop: '1px solid #f7eff9', pt: '3px' }}>
+            <Typography sx={{ fontSize: '7.5pt', fontWeight: 800, color: '#722083', letterSpacing: '0.04em' }}>
               {guest.refId}
             </Typography>
             <Typography sx={{ fontSize: '5pt', color: '#94a3b8', fontWeight: 500 }}>

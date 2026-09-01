@@ -79,19 +79,19 @@ export default function Login() {
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <Avatar
               sx={{
-                bgcolor: '#2596be',
+                bgcolor: '#722083',
                 width: 52,
                 height: 52,
                 borderRadius: '14px',
                 mx: 'auto',
                 mb: 1.5,
-                boxShadow: '0 8px 16px rgba(37, 150, 190, 0.3)'
+                boxShadow: '0 8px 16px rgba(114, 32, 131, 0.3)'
               }}
             >
-              <Sparkles size={26} color="#ffffff" />
+              <Sparkles size={26} color="#fdb700" />
             </Avatar>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
-              EL-MOULTAKA <span style={{ color: '#2596be' }}>APP</span>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e0824', letterSpacing: '-0.02em' }}>
+              EL-MOULTAKA <span style={{ color: '#722083' }}>APP</span>
             </Typography>
             <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5, fontWeight: 500 }}>
               Plateforme d'Accueil & Gestion des Invités

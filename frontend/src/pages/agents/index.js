@@ -149,7 +149,7 @@ export default function AgentsManagementPage() {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                    <CircularProgress sx={{ color: '#2596be' }} />
+                    <CircularProgress sx={{ color: '#722083' }} />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -157,7 +157,7 @@ export default function AgentsManagementPage() {
                   <TableRow key={ag.id} hover>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar sx={{ bgcolor: '#2596be', width: 34, height: 34, fontSize: '0.85rem', fontWeight: 700 }}>
+                        <Avatar sx={{ bgcolor: '#722083', width: 34, height: 34, fontSize: '0.85rem', fontWeight: 700 }}>
                           {ag.fullName?.charAt(0) || 'U'}
                         </Avatar>
                         <Box>

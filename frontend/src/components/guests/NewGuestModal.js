@@ -64,8 +64,8 @@ export default function NewGuestModal({ open, onClose, onSubmit, isSubmitting = 
       PaperProps={{ sx: { borderRadius: 3 } }}
     >
       <DialogTitle sx={{ fontWeight: 800, pb: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{ bgcolor: 'rgba(37, 150, 190, 0.1)', p: 1, borderRadius: 2, display: 'flex' }}>
-          <UserPlus size={22} color="#2596be" />
+        <Box sx={{ bgcolor: 'rgba(114, 32, 131, 0.1)', p: 1, borderRadius: 2, display: 'flex' }}>
+          <UserPlus size={22} color="#722083" />
         </Box>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
@@ -240,7 +240,7 @@ export default function NewGuestModal({ open, onClose, onSubmit, isSubmitting = 
                 }
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                    <Printer size={16} color="#2596be" />
+                    <Printer size={16} color="#722083" />
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       Lancer l'impression du badge
                     </Typography>
