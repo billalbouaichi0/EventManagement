@@ -1,0 +1,181 @@
+================================================================================
+           EL-MOULTAKA APP — REQUÊTES SQL DE STATISTIQUES & RAPPORTS
+================================================================================
+Base de données : event_management (MySQL / MariaDB)
+Toutes les requêtes peuvent être exécutées directement dans phpMyAdmin, MySQL Workbench, DBeaver ou en ligne de commande MySQL.
+
+Remarque : Si vous avez plusieurs événements, remplacez `eventId = 1` par l'ID de votre événement (ex: eventId = 1).
+================================================================================
+
+
+--------------------------------------------------------------------------------
+1. NOMBRE TOTAL D'INVITÉS PRÉSENTS (ÉMARGÉS) ET TOTAL DES ACTIONS
+--------------------------------------------------------------------------------
+
+-- 1.1 Nombre total de présents pour un événement spécifique
+SELECT 
+    e.name AS Evenement,
+    COUNT(a.id) AS Nombre_Presents,
+    COALESCE(SUM(g.numberOfShares), 0) AS Total_Actions_Representees
+FROM attendances a
+JOIN guests g ON a.guestId = g.id
+JOIN events e ON a.eventId = e.id
+WHERE a.status = 'PRESENT' AND a.eventId = 1
+GROUP BY e.id, e.name;
+
+-- 1.2 Taux de présence global (Total Inscrits vs Total Présents)
+SELECT 
+    e.name AS Evenement,
+    COUNT(DISTINCT g.id) AS Total_Invites_Inscrits,
+    COUNT(DISTINCT a.id) AS Total_Presents,
+    CONCAT(ROUND((COUNT(DISTINCT a.id) * 100.0 / NULLIF(COUNT(DISTINCT g.id), 0)), 2), ' %') AS Taux_Presence,
+    COALESCE(SUM(g.numberOfShares), 0) AS Total_Actions_Inscrites,
+    COALESCE(SUM(CASE WHEN a.id IS NOT NULL THEN g.numberOfShares ELSE 0 END), 0) AS Total_Actions_Presents
+FROM events e
+LEFT JOIN guests g ON e.id = g.eventId
+LEFT JOIN attendances a ON g.id = a.guestId AND a.status = 'PRESENT'
+WHERE e.id = 1
+GROUP BY e.id, e.name;
+
+
+--------------------------------------------------------------------------------
+2. NOMBRE DE BADGES IMPRIMÉS (TOTAL ET PAR STATUT)
+--------------------------------------------------------------------------------
+
+-- 2.1 Nombre total de badges imprimés (avec distinction réimpressions)
+SELECT 
+    e.name AS Evenement,
+    COUNT(bp.id) AS Total_Impressions_Effectuees,
+    COUNT(DISTINCT bp.guestId) AS Total_Invites_Avec_Badge_Imprime,
+    COUNT(bp.id) - COUNT(DISTINCT bp.guestId) AS Total_Reimpressions
+FROM badge_prints bp
+JOIN events e ON bp.eventId = e.id
+WHERE bp.eventId = 1
+GROUP BY e.id, e.name;
+
+-- 2.2 Nombre de badges imprimés par agent
+SELECT 
+    u.fullName AS Agent_Nom,
+    u.username AS Identifiant_Agent,
+    COUNT(bp.id) AS Total_Badges_Imprimes,
+    COUNT(DISTINCT bp.guestId) AS Invites_Uniques
+FROM badge_prints bp
+JOIN users u ON bp.printedBy = u.id
+WHERE bp.eventId = 1
+GROUP BY u.id, u.fullName, u.username
+ORDER BY Total_Badges_Imprimes DESC;
+
+
+--------------------------------------------------------------------------------
+3. LISTE DES PRÉSENTS AVEC L'AGENT QUI A ÉMARGÉ ET/OU IMPRIMÉ LE BADGE
+--------------------------------------------------------------------------------
+
+SELECT 
+    g.refId AS Reference,
+    g.lastNameOrCompany AS Nom_Ou_Raison_Sociale,
+    COALESCE(g.firstName, '') AS Prenom,
+    g.numberOfShares AS Nombre_Actions,
+    g.guestType AS Type_Invite,
+    a.checkedInAt AS Date_Heure_Emargement,
+    a.workstation AS Poste_Guichet,
+    agentCheckin.fullName AS Enregistre_Par_Agent,
+    agentCheckin.username AS Username_Agent_Emargement,
+    CASE 
+        WHEN COUNT(bp.id) > 0 THEN 'OUI' 
+        ELSE 'NON' 
+    END AS Badge_Imprime,
+    COUNT(bp.id) AS Nombre_Impressions_Badge,
+    MAX(bp.printedAt) AS Derniere_Impression_A,
+    GROUP_CONCAT(DISTINCT agentPrint.fullName SEPARATOR ', ') AS Imprime_Par_Agent
+FROM attendances a
+JOIN guests g ON a.guestId = g.id
+JOIN users agentCheckin ON a.checkedInBy = agentCheckin.id
+LEFT JOIN badge_prints bp ON g.id = bp.guestId
+LEFT JOIN users agentPrint ON bp.printedBy = agentPrint.id
+WHERE a.eventId = 1 AND a.status = 'PRESENT'
+GROUP BY 
+    g.id, g.refId, g.lastNameOrCompany, g.firstName, 
+    g.numberOfShares, g.guestType, a.checkedInAt, 
+    a.workstation, agentCheckin.fullName, agentCheckin.username
+ORDER BY a.checkedInAt DESC;
+
+
+--------------------------------------------------------------------------------
+4. LISTE DÉTAILLÉE DES PRÉSENTS AVEC NIN, RC, NIF, ADRESSE, WILAYA, BANQUE, ACTIONS
+--------------------------------------------------------------------------------
+
+SELECT 
+    g.refId AS Reference,
+    g.importNumber AS Numero_Ordre_Import,
+    g.lastNameOrCompany AS Nom_Ou_Raison_Sociale,
+    COALESCE(g.firstName, '') AS Prenom,
+    g.numberOfShares AS Nombre_Actions,
+    COALESCE(g.nationalIdentificationNumber, '') AS NIN,
+    COALESCE(g.registrationNumber, '') AS Registre_Commerce_RC,
+    COALESCE(g.registrationIssueDate, '') AS Date_Delivrance_RC,
+    COALESCE(g.taxIdentificationNumber, '') AS NIF,
+    COALESCE(g.birthDate, '') AS Date_Naissance,
+    COALESCE(g.wilaya, '') AS Wilaya,
+    COALESCE(g.address, '') AS Adresse,
+    COALESCE(g.bank, '') AS Banque_Agence,
+    g.guestType AS Categorie,
+    a.checkedInAt AS Date_Heure_Presence,
+    a.workstation AS Poste_Guichet,
+    u.fullName AS Agent_Operateur
+FROM attendances a
+JOIN guests g ON a.guestId = g.id
+JOIN users u ON a.checkedInBy = u.id
+WHERE a.eventId = 1 AND a.status = 'PRESENT'
+ORDER BY a.checkedInAt ASC;
+
+
+--------------------------------------------------------------------------------
+5. RÉCAPITULATIF DES PRÉSENTS PAR AGENT (PRODUCTIVITÉ DES GUICHETS)
+--------------------------------------------------------------------------------
+
+SELECT 
+    u.fullName AS Nom_Agent,
+    u.username AS Identifiant,
+    COUNT(a.id) AS Total_Emargements_Realises,
+    COALESCE(SUM(g.numberOfShares), 0) AS Total_Actions_Validees,
+    MIN(a.checkedInAt) AS Premier_Emargement,
+    MAX(a.checkedInAt) AS Dernier_Emargement
+FROM attendances a
+JOIN users u ON a.checkedInBy = u.id
+JOIN guests g ON a.guestId = g.id
+WHERE a.eventId = 1 AND a.status = 'PRESENT'
+GROUP BY u.id, u.fullName, u.username
+ORDER BY Total_Emargements_Realises DESC;
+
+
+--------------------------------------------------------------------------------
+6. HISTORIQUE DU FLUX D'ARRIVÉE DES PRÉSENTS PAR HEURE
+--------------------------------------------------------------------------------
+
+SELECT 
+    DATE_FORMAT(a.checkedInAt, '%Y-%m-%d %H:00:00') AS Heure_Tranche,
+    COUNT(a.id) AS Nombre_Arrivees,
+    SUM(g.numberOfShares) AS Actions_Arrivees
+FROM attendances a
+JOIN guests g ON a.guestId = g.id
+WHERE a.eventId = 1 AND a.status = 'PRESENT'
+GROUP BY DATE_FORMAT(a.checkedInAt, '%Y-%m-%d %H:00:00')
+ORDER BY Heure_Tranche ASC;
+
+
+--------------------------------------------------------------------------------
+7. LISTE DES INVITÉS NON ENCORE PRÉSENTS (ABSENTS)
+--------------------------------------------------------------------------------
+
+SELECT 
+    g.refId AS Reference,
+    g.lastNameOrCompany AS Nom_Ou_Raison_Sociale,
+    COALESCE(g.firstName, '') AS Prenom,
+    g.numberOfShares AS Nombre_Actions,
+    COALESCE(g.nationalIdentificationNumber, '') AS NIN,
+    COALESCE(g.wilaya, '') AS Wilaya,
+    g.guestType AS Categorie
+FROM guests g
+LEFT JOIN attendances a ON g.id = a.guestId AND a.status = 'PRESENT'
+WHERE g.eventId = 1 AND a.id IS NULL
+ORDER BY g.lastNameOrCompany ASC;
