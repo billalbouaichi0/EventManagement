@@ -433,14 +433,54 @@ export const analyzeCSV = async (req, res) => {
     return res.status(400).json({ error: 'Aucun fichier CSV fourni.' });
   }
 
+  const { eventId } = req.query;
+
   const results = [];
   const errors = [];
+  const duplicates = [];
   const preview = [];
   let rowNumber = 1;
 
+  // Retrieve existing guests from database if eventId is supplied
+  let existingNinSet = new Set();
+  let existingRcSet = new Set();
+  let existingNameSet = new Set();
+
+  if (eventId) {
+    try {
+      const existingGuests = await Guest.findAll({
+        where: { eventId: parseInt(eventId, 10) },
+        attributes: ['nationalIdentificationNumber', 'registrationNumber', 'lastNameOrCompany', 'firstName']
+      });
+
+      existingGuests.forEach(g => {
+        if (g.nationalIdentificationNumber) existingNinSet.add(String(g.nationalIdentificationNumber).trim());
+        if (g.registrationNumber) existingRcSet.add(String(g.registrationNumber).trim());
+        const fullName = `${String(g.lastNameOrCompany).trim().toUpperCase()} ${String(g.firstName || '').trim().toUpperCase()}`.trim();
+        existingNameSet.add(fullName);
+      });
+    } catch (dbErr) {
+      console.warn('Impossible de charger les invités existants pour la détection des doublons:', dbErr.message);
+    }
+  }
+
+  // In-file uniqueness tracking sets
+  const fileNinSet = new Set();
+  const fileRcSet = new Set();
+  const fileNameSet = new Set();
+
+  // Helper to clean quotes and trim
+  const cleanVal = (val) => {
+    if (val === undefined || val === null) return '';
+    return String(val)
+      .replace(/^["']|["']$/g, '')
+      .replace(/[\r\n]+/g, ' ')
+      .trim();
+  };
+
   // Convert buffer to string to detect separator and strip BOM
   const fileContent = req.file.buffer.toString('utf-8').replace(/^\uFEFF/, '');
-  const firstLine = fileContent.split('\n')[0] || '';
+  const firstLine = fileContent.split(/\r?\n/)[0] || '';
   const separator = firstLine.includes(';') ? ';' : (firstLine.includes('\t') ? '\t' : ',');
 
   const bufferStream = new Readable();
@@ -450,41 +490,59 @@ export const analyzeCSV = async (req, res) => {
   bufferStream
     .pipe(csvParser({
       separator,
-      mapHeaders: ({ header }) => header.trim().replace(/^["']|["']$/g, '')
+      quote: false, // Prevents unescaped quotes from merging/swallowing subsequent lines
+      mapHeaders: ({ header }) => header.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, ' ')
     }))
     .on('data', (rawRow) => {
       rowNumber++;
 
-      // Clean keys in row
+      // Clean keys and values in row
       const row = {};
+      const lowerRow = {};
       Object.keys(rawRow).forEach(k => {
-        row[k.trim()] = rawRow[k];
+        const cleanedKey = k.trim().replace(/^["']|["']$/g, '');
+        const val = cleanVal(rawRow[k]);
+        row[cleanedKey] = val;
+        lowerRow[cleanedKey.toLowerCase()] = val;
       });
 
-      const rawImportNum = row['N°'] || row['N'] || row['Numero'] || '';
+      const findField = (...aliases) => {
+        for (const alias of aliases) {
+          if (row[alias] !== undefined && row[alias] !== '') return row[alias];
+          const lower = alias.toLowerCase();
+          if (lowerRow[lower] !== undefined && lowerRow[lower] !== '') return lowerRow[lower];
+        }
+        return '';
+      };
+
+      const rawImportNum = findField('N°', 'N', 'Numero', 'N° ordre', 'Ordre', 'ID');
       const importNumber = rawImportNum ? parseInt(String(rawImportNum).replace(/[^0-9]/g, ''), 10) : null;
 
-      const lastNameOrCompany = (row['Nom ou raison sociale'] || row['Nom'] || row['Raison Sociale'] || row['Raison sociale'] || '').trim();
-      const firstName = (row['Prénom'] || row['Prenom'] || '').trim();
+      const lastNameOrCompany = findField(
+        'Nom ou raison sociale', 'Nom ou Raison Sociale', 'Nom / Raison Sociale', 'Nom/Raison Sociale',
+        'Nom / raison sociale', 'Nom/Raison sociale', 'Nom', 'NOM', 'Raison Sociale', 'Raison sociale',
+        'RAISON SOCIALE', 'Désignation', 'Designation', 'Actionnaire', 'Client', 'Nom & Prénom', 'Nom et Prénom'
+      );
+      const firstName = findField('Prénom', 'Prenom', 'PRENOM', 'Prénoms');
 
-      const sharesRaw = row['Nombre d\'actions'] || row['Nombre d’actions'] || row['Actions'] || row['Nombre actions'] || '0';
+      const sharesRaw = findField('Nombre d\'actions', 'Nombre d’actions', 'Actions', 'Nombre actions', 'Actions Détenues', 'Nb Actions', 'Parts');
       const numberOfShares = parseInt(String(sharesRaw).replace(/[^0-9]/g, ''), 10) || 0;
 
-      const birthDate = (row['Date de naissance'] || row['Date naissance'] || '').trim();
-      const address = (row['Adresse'] || '').trim();
-      const wilaya = (row['Wilaya'] || '').trim();
-      const nationalIdentificationNumber = (row['Numéro d\'Identification National'] || row['Numéro d’Identification National'] || row['NIN'] || '').trim();
-      const registrationNumber = (row['RC/N° agrément'] || row['RC/N° agrement'] || row['RC'] || row['N° agrément'] || '').trim();
-      const registrationIssueDate = (row['Date de délivrance RC'] || row['Date délivrance RC'] || '').trim();
-      const taxIdentificationNumber = (row['Numéro d\'identification fiscal (NIF)'] || row['Numéro d’identification fiscal (NIF)'] || row['NIF'] || '').trim();
-      const bank = (row['Banque'] || '').trim();
+      const birthDate = findField('Date de naissance', 'Date naissance', 'Date Naissance', 'Né(e) le');
+      const address = findField('Adresse', 'ADRESSE', 'Domicile', 'Siège');
+      const wilaya = findField('Wilaya', 'WILAYA', 'Ville');
+      const nationalIdentificationNumber = findField('Numéro d\'Identification National', 'Numéro d’Identification National', 'NIN', 'N.I.N', 'NIN/ID');
+      const registrationNumber = findField('RC/N° agrément', 'RC/N° agrement', 'RC', 'R.C', 'N° agrément', 'Registre Commerce');
+      const registrationIssueDate = findField('Date de délivrance RC', 'Date délivrance RC', 'Date RC');
+      const taxIdentificationNumber = findField('Numéro d\'identification fiscal (NIF)', 'Numéro d’identification fiscal (NIF)', 'NIF', 'N.I.F');
+      const bank = findField('Banque', 'BANQUE', 'Agence Bancaire');
 
       if (!lastNameOrCompany) {
         const hasOtherData = Object.values(row).some(v => String(v).trim().length > 0);
         if (hasOtherData) {
           errors.push({
             line: rowNumber,
-            error: 'Nom ou raison sociale manquant ou colonne non détectée',
+            error: 'Nom ou raison sociale manquant ou colonne non reconnue',
             rawData: row,
             draft: {
               importNumber,
@@ -506,6 +564,60 @@ export const analyzeCSV = async (req, res) => {
         }
         return;
       }
+
+      const fullName = `${lastNameOrCompany.toUpperCase()} ${(firstName || '').toUpperCase()}`.trim();
+
+      // Check Duplicates in DB
+      let isDuplicate = false;
+      let dupReason = '';
+      let dupIdentifier = '';
+
+      if (nationalIdentificationNumber && existingNinSet.has(nationalIdentificationNumber)) {
+        isDuplicate = true;
+        dupReason = 'NIN déjà enregistré pour cet événement';
+        dupIdentifier = `NIN: ${nationalIdentificationNumber}`;
+      } else if (registrationNumber && existingRcSet.has(registrationNumber)) {
+        isDuplicate = true;
+        dupReason = 'RC déjà enregistré pour cet événement';
+        dupIdentifier = `RC: ${registrationNumber}`;
+      } else if (existingNameSet.has(fullName)) {
+        isDuplicate = true;
+        dupReason = 'Nom & Prénom déjà enregistrés pour cet événement';
+        dupIdentifier = fullName;
+      }
+
+      // Check Duplicates within same file
+      if (!isDuplicate) {
+        if (nationalIdentificationNumber && fileNinSet.has(nationalIdentificationNumber)) {
+          isDuplicate = true;
+          dupReason = 'NIN en doublon dans le fichier';
+          dupIdentifier = `NIN: ${nationalIdentificationNumber}`;
+        } else if (registrationNumber && fileRcSet.has(registrationNumber)) {
+          isDuplicate = true;
+          dupReason = 'RC en doublon dans le fichier';
+          dupIdentifier = `RC: ${registrationNumber}`;
+        } else if (fileNameSet.has(fullName)) {
+          isDuplicate = true;
+          dupReason = 'Nom & Prénom en doublon dans le fichier';
+          dupIdentifier = fullName;
+        }
+      }
+
+      if (isDuplicate) {
+        duplicates.push({
+          line: rowNumber,
+          name: `${lastNameOrCompany} ${firstName}`.trim(),
+          identifier: dupIdentifier,
+          reason: dupReason,
+          type: existingNameSet.has(fullName) || (nationalIdentificationNumber && existingNinSet.has(nationalIdentificationNumber)) || (registrationNumber && existingRcSet.has(registrationNumber)) ? 'DB_DUPLICATE' : 'FILE_DUPLICATE'
+        });
+        return;
+      }
+
+      // Record in file sets
+      if (nationalIdentificationNumber) fileNinSet.add(nationalIdentificationNumber);
+      if (registrationNumber) fileRcSet.add(registrationNumber);
+      fileNameSet.add(fullName);
 
       const parsedGuest = {
         importNumber,
@@ -531,8 +643,10 @@ export const analyzeCSV = async (req, res) => {
     })
     .on('end', () => {
       res.json({
-        totalRows: rowNumber - 1,
+        totalRows: results.length + errors.length + duplicates.length,
         validCount: results.length,
+        duplicateCount: duplicates.length,
+        duplicates,
         invalidCount: errors.length,
         errors,
         preview,
