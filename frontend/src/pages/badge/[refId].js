@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { QRCodeSVG } from 'qrcode.react';
@@ -9,15 +9,20 @@ import {
   CircularProgress,
   Paper
 } from '@mui/material';
-import { Printer, ArrowLeft } from 'lucide-react';
+import { Printer, ArrowLeft, Download } from 'lucide-react';
 import api from '../../services/api';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function BadgePrintPage() {
   const router = useRouter();
-  const { refId, autoPrint } = router.query;
+  const { refId, autoPrint, autoDownload } = router.query;
 
   const [guest, setGuest] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const badgeRef = useRef(null);
+  const hasAutoProcessed = useRef(false);
 
   useEffect(() => {
     if (refId) {
@@ -34,14 +39,60 @@ export default function BadgePrintPage() {
     }
   }, [refId]);
 
-  useEffect(() => {
-    if (guest && autoPrint === 'true') {
-      const timer = setTimeout(() => {
+  // Function to generate and download the actual .pdf file (65mm x 102mm)
+  const downloadPdf = async (shouldPrintAfter = false) => {
+    if (!badgeRef.current || !guest) return;
+    setDownloadingPdf(true);
+
+    try {
+      const element = badgeRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 3, // High resolution for crisp printing
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Initialize jsPDF in mm with exact dimensions 65mm x 102mm portrait
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [65, 102]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, 65, 102, undefined, 'FAST');
+      
+      const fileName = `Badge_${guest.refId}_${guest.lastNameOrCompany || 'Invite'}.pdf`.replace(/[^a-zA-Z0-9_\.-]/g, '_');
+      pdf.save(fileName);
+
+      if (shouldPrintAfter) {
+        setTimeout(() => {
+          window.print();
+        }, 600);
+      }
+    } catch (err) {
+      console.error('Erreur génération PDF badge:', err);
+      // Fallback to browser print if canvas fails
+      if (shouldPrintAfter) {
         window.print();
-      }, 500);
+      }
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
+  // Auto trigger PDF Download and Print on load if requested
+  useEffect(() => {
+    if (guest && !hasAutoProcessed.current && (autoPrint === 'true' || autoDownload === 'true')) {
+      hasAutoProcessed.current = true;
+      const timer = setTimeout(() => {
+        downloadPdf(autoPrint === 'true');
+      }, 700);
       return () => clearTimeout(timer);
     }
-  }, [guest, autoPrint]);
+  }, [guest, autoPrint, autoDownload]);
 
   if (loading) {
     return (
@@ -118,6 +169,8 @@ export default function BadgePrintPage() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2,
           color: '#ffffff'
         }}
       >
@@ -132,18 +185,32 @@ export default function BadgePrintPage() {
             Fermer
           </Button>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Aperçu Badge Vertical (Largeur 65 mm × Hauteur 102 mm)
+            Badge Officiel — {guest.lastNameOrCompany} ({guest.refId})
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          onClick={() => window.print()}
-          startIcon={<Printer size={18} />}
-          sx={{ bgcolor: '#722083', '&:hover': { bgcolor: '#591766' }, fontWeight: 700 }}
-        >
-          Imprimer le badge
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          {/* Download PDF Button */}
+          <Button
+            variant="contained"
+            disabled={downloadingPdf}
+            onClick={() => downloadPdf(false)}
+            startIcon={downloadingPdf ? <CircularProgress size={16} color="inherit" /> : <Download size={18} />}
+            sx={{ bgcolor: '#fdb700', color: '#1e0824', '&:hover': { bgcolor: '#fecb43' }, fontWeight: 800 }}
+          >
+            {downloadingPdf ? 'Génération PDF...' : 'Télécharger le PDF (.pdf)'}
+          </Button>
+
+          {/* Print Button */}
+          <Button
+            variant="contained"
+            onClick={() => window.print()}
+            startIcon={<Printer size={18} />}
+            sx={{ bgcolor: '#722083', '&:hover': { bgcolor: '#591766' }, fontWeight: 700 }}
+          >
+            Imprimer le badge
+          </Button>
+        </Box>
       </Box>
 
       {/* Badge Viewport Container */}
@@ -159,6 +226,8 @@ export default function BadgePrintPage() {
       >
         {/* Physical Badge Layout: EXACT Largeur 65mm x Hauteur 102mm */}
         <Paper
+          ref={badgeRef}
+          id="badge-to-print"
           className="badge-card badge-print-container"
           elevation={4}
           sx={{
@@ -200,6 +269,7 @@ export default function BadgePrintPage() {
             <img
               src="/logo-acronyme.png"
               alt="Logo BDL"
+              crossOrigin="anonymous"
               style={{
                 height: '16mm',
                 maxWidth: '48mm',
