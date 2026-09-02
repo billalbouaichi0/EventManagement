@@ -6,31 +6,22 @@ import {
   Typography,
   Button,
   CircularProgress,
-  Paper,
-  ToggleButton,
-  ToggleButtonGroup
+  Paper
 } from '@mui/material';
-import { Printer, ArrowLeft, Download, RotateCw, CheckCircle2 } from 'lucide-react';
+import { Printer, ArrowLeft, Download, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 export default function BadgePrintPage() {
   const router = useRouter();
-  const { refId, autoPrint, autoDownload, rot } = router.query;
+  const { refId, autoPrint, autoDownload } = router.query;
 
   const [guest, setGuest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
-  const [rotation, setRotation] = useState('-90'); // '-90' (default rotated 90° from Left to Right), '90', '0'
   const badgeRef = useRef(null);
   const printTriggered = useRef(false);
-
-  useEffect(() => {
-    if (rot && ['-90', '90', '0', '270'].includes(rot)) {
-      setRotation(rot === '270' ? '-90' : rot);
-    }
-  }, [rot]);
 
   useEffect(() => {
     if (refId) {
@@ -67,12 +58,12 @@ export default function BadgePrintPage() {
       const imgData = canvas.toDataURL('image/png');
       
       const pdf = new jsPDF({
-        orientation: 'landscape',
+        orientation: 'portrait',
         unit: 'mm',
         format: [65, 102]
       });
 
-      pdf.addImage(imgData, 'PNG', 0, 0, 102, 65, undefined, 'FAST');
+      pdf.addImage(imgData, 'PNG', 0, 0, 65, 102, undefined, 'FAST');
       
       const fileName = `Badge_${guest.lastNameOrCompany || 'Invite'}.pdf`.replace(/[^a-zA-Z0-9_\.-]/g, '_');
       pdf.save(fileName);
@@ -124,7 +115,7 @@ export default function BadgePrintPage() {
         <style>{`
           @media print {
             @page {
-              size: 102mm 65mm;
+              size: 65mm 102mm portrait;
               margin: 0mm !important;
               padding: 0mm !important;
             }
@@ -136,12 +127,12 @@ export default function BadgePrintPage() {
               print-color-adjust: exact !important;
             }
             html, body {
-              width: 102mm !important;
-              height: 65mm !important;
-              min-width: 102mm !important;
-              min-height: 65mm !important;
-              max-width: 102mm !important;
-              max-height: 65mm !important;
+              width: 65mm !important;
+              height: 102mm !important;
+              min-width: 65mm !important;
+              min-height: 102mm !important;
+              max-width: 65mm !important;
+              max-height: 102mm !important;
               margin: 0 !important;
               padding: 0 !important;
               overflow: hidden !important;
@@ -151,12 +142,12 @@ export default function BadgePrintPage() {
               display: none !important;
             }
             .badge-print-wrapper {
-              width: 102mm !important;
-              height: 65mm !important;
-              min-width: 102mm !important;
-              min-height: 65mm !important;
-              max-width: 102mm !important;
-              max-height: 65mm !important;
+              width: 65mm !important;
+              height: 102mm !important;
+              min-width: 65mm !important;
+              min-height: 102mm !important;
+              max-width: 65mm !important;
+              max-height: 102mm !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
@@ -177,8 +168,7 @@ export default function BadgePrintPage() {
               border-radius: 0 !important;
               margin: 0 !important;
               padding: 4mm 5mm !important;
-              transform: ${rotation === '0' ? 'none' : `rotate(${rotation}deg)`} !important;
-              transform-origin: center center !important;
+              transform: none !important;
             }
           }
         `}</style>
@@ -209,42 +199,12 @@ export default function BadgePrintPage() {
             Fermer
           </Button>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Badge — {guest.lastNameOrCompany} {guest.firstName || ''}
+            Badge (Largeur 65 mm × Hauteur 102 mm) — {guest.lastNameOrCompany} {guest.firstName || ''}
           </Typography>
         </Box>
 
-        {/* Action Controls & Rotation Selector */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-          <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <RotateCw size={14} /> Sens :
-          </Typography>
-          <ToggleButtonGroup
-            value={rotation}
-            exclusive
-            onChange={(e, val) => val && setRotation(val)}
-            size="small"
-            sx={{
-              bgcolor: 'rgba(255, 255, 255, 0.1)',
-              '& .MuiToggleButton-root': {
-                color: '#e2e8f0',
-                py: 0.5,
-                px: 1.5,
-                fontSize: '0.75rem',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                '&.Mui-selected': {
-                  bgcolor: '#fdb700',
-                  color: '#1e0824',
-                  fontWeight: 800,
-                  '&:hover': { bgcolor: '#fecb43' }
-                }
-              }
-            }}
-          >
-            <ToggleButton value="-90">90° Gauche → Droite</ToggleButton>
-            <ToggleButton value="90">90° Droite → Gauche</ToggleButton>
-            <ToggleButton value="0">0° Direct</ToggleButton>
-          </ToggleButtonGroup>
-
+        {/* Action Controls */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Button
             variant="contained"
             disabled={downloadingPdf}
@@ -261,7 +221,7 @@ export default function BadgePrintPage() {
             startIcon={<Printer size={18} />}
             sx={{ bgcolor: '#722083', '&:hover': { bgcolor: '#591766' }, fontWeight: 700 }}
           >
-            Imprimer (Xprinter)
+            Imprimer le badge
           </Button>
         </Box>
       </Box>
@@ -270,7 +230,7 @@ export default function BadgePrintPage() {
       <Box className="no-print" sx={{ bgcolor: '#fdf9ff', borderBottom: '1px solid #f0e6f2', px: 3, py: 1, display: 'flex', justifyContent: 'center' }}>
         <Typography variant="caption" sx={{ color: '#722083', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
           <CheckCircle2 size={14} color="#722083" />
-          Astuce Xprinter : Dans les paramètres d'impression du navigateur, mettez <b>Marges : « Aucune »</b> et <b>Échelle : 100%</b>.
+          Format 65 mm × 102 mm : Dans les paramètres d'impression, réglez <b>Marges : « Aucune »</b> et <b>Échelle : 100%</b>.
         </Typography>
       </Box>
 
@@ -288,16 +248,15 @@ export default function BadgePrintPage() {
         <Box
           className="badge-print-wrapper"
           sx={{
-            width: '102mm',
-            height: '65mm',
+            width: '65mm',
+            height: '102mm',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            overflow: 'visible',
             position: 'relative'
           }}
         >
-          {/* Card: 65mm x 102mm rotated 90deg to fill 102mm x 65mm */}
+          {/* Card: Exact 65mm Largeur x 102mm Hauteur - Zero rotation */}
           <Paper
             ref={badgeRef}
             id="badge-to-print"
@@ -321,10 +280,7 @@ export default function BadgePrintPage() {
               textAlign: 'center',
               boxSizing: 'border-box',
               position: 'relative',
-              overflow: 'hidden',
-              transform: rotation === '0' ? 'none' : `rotate(${rotation}deg)`,
-              transformOrigin: 'center center',
-              transition: 'transform 0.2s ease'
+              overflow: 'hidden'
             }}
           >
             {/* Top Decorative Border (Violet + Gold) */}
