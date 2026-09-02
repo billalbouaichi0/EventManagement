@@ -22,7 +22,7 @@ export default function BadgePrintPage() {
   const [loading, setLoading] = useState(true);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const badgeRef = useRef(null);
-  const hasAutoProcessed = useRef(false);
+  const printTriggered = useRef(false);
 
   useEffect(() => {
     if (refId) {
@@ -39,8 +39,13 @@ export default function BadgePrintPage() {
     }
   }, [refId]);
 
+  // Clean, stable print handler without state collisions
+  const handleDirectPrint = () => {
+    window.print();
+  };
+
   // Function to generate and download the actual .pdf file (65mm x 102mm)
-  const downloadPdf = async (shouldPrintAfter = false) => {
+  const handleDownloadPdf = async () => {
     if (!badgeRef.current || !guest) return;
     setDownloadingPdf(true);
 
@@ -55,7 +60,6 @@ export default function BadgePrintPage() {
 
       const imgData = canvas.toDataURL('image/png');
       
-      // Initialize jsPDF in mm with exact dimensions 65mm x 102mm portrait
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -66,33 +70,29 @@ export default function BadgePrintPage() {
       
       const fileName = `Badge_${guest.refId}_${guest.lastNameOrCompany || 'Invite'}.pdf`.replace(/[^a-zA-Z0-9_\.-]/g, '_');
       pdf.save(fileName);
-
-      if (shouldPrintAfter) {
-        setTimeout(() => {
-          window.print();
-        }, 600);
-      }
     } catch (err) {
       console.error('Erreur génération PDF badge:', err);
-      // Fallback to browser print if canvas fails
-      if (shouldPrintAfter) {
-        window.print();
-      }
     } finally {
       setDownloadingPdf(false);
     }
   };
 
-  // Auto trigger PDF Download and Print on load if requested
+  // Auto trigger Print or Download when requested via URL query params
   useEffect(() => {
-    if (guest && !hasAutoProcessed.current && (autoPrint === 'true' || autoDownload === 'true')) {
-      hasAutoProcessed.current = true;
-      const timer = setTimeout(() => {
-        downloadPdf(autoPrint === 'true');
-      }, 700);
-      return () => clearTimeout(timer);
+    if (guest && !loading && !printTriggered.current) {
+      printTriggered.current = true;
+
+      if (autoDownload === 'true') {
+        handleDownloadPdf();
+      } else if (autoPrint === 'true') {
+        // Wait for logo and fonts to fully paint, then trigger print safely
+        const timer = setTimeout(() => {
+          window.print();
+        }, 600);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [guest, autoPrint, autoDownload]);
+  }, [guest, loading, autoPrint, autoDownload]);
 
   if (loading) {
     return (
@@ -185,7 +185,7 @@ export default function BadgePrintPage() {
             Fermer
           </Button>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Badge Officiel — {guest.lastNameOrCompany} ({guest.refId})
+            Badge — {guest.lastNameOrCompany} ({guest.refId})
           </Typography>
         </Box>
 
@@ -194,17 +194,17 @@ export default function BadgePrintPage() {
           <Button
             variant="contained"
             disabled={downloadingPdf}
-            onClick={() => downloadPdf(false)}
+            onClick={handleDownloadPdf}
             startIcon={downloadingPdf ? <CircularProgress size={16} color="inherit" /> : <Download size={18} />}
             sx={{ bgcolor: '#fdb700', color: '#1e0824', '&:hover': { bgcolor: '#fecb43' }, fontWeight: 800 }}
           >
-            {downloadingPdf ? 'Génération PDF...' : 'Télécharger le PDF (.pdf)'}
+            {downloadingPdf ? 'Génération...' : 'Télécharger PDF (.pdf)'}
           </Button>
 
           {/* Print Button */}
           <Button
             variant="contained"
-            onClick={() => window.print()}
+            onClick={handleDirectPrint}
             startIcon={<Printer size={18} />}
             sx={{ bgcolor: '#722083', '&:hover': { bgcolor: '#591766' }, fontWeight: 700 }}
           >
