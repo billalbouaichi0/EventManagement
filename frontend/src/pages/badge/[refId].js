@@ -127,7 +127,7 @@ export default function BadgePrintPage() {
         <style>{`
           @media print {
             @page {
-              size: 102mm 65mm;
+              size: 102mm 65mm landscape;
               margin: 0;
             }
             html, body {

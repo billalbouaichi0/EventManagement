@@ -44,7 +44,7 @@ a {
 /* Badge Print CSS (Exact Format 102 mm Largeur x 65 mm Hauteur - Xprinter) */
 @media print {
   @page {
-    size: 102mm 65mm;
+    size: 102mm 65mm landscape;
     margin: 0;
   }
 
