@@ -7,22 +7,31 @@ import {
   Typography,
   Button,
   CircularProgress,
-  Paper
+  Paper,
+  ToggleButton,
+  ToggleButtonGroup
 } from '@mui/material';
-import { Printer, ArrowLeft, Download } from 'lucide-react';
+import { Printer, ArrowLeft, Download, RotateCw } from 'lucide-react';
 import api from '../../services/api';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 export default function BadgePrintPage() {
   const router = useRouter();
-  const { refId, autoPrint, autoDownload } = router.query;
+  const { refId, autoPrint, autoDownload, rot } = router.query;
 
   const [guest, setGuest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [rotation, setRotation] = useState('-90'); // '-90' (default rotated 90° from Left to Right), '90', '0'
   const badgeRef = useRef(null);
   const printTriggered = useRef(false);
+
+  useEffect(() => {
+    if (rot && ['-90', '90', '0', '270'].includes(rot)) {
+      setRotation(rot === '270' ? '-90' : rot);
+    }
+  }, [rot]);
 
   useEffect(() => {
     if (refId) {
@@ -39,12 +48,10 @@ export default function BadgePrintPage() {
     }
   }, [refId]);
 
-  // Clean print handler without state collisions for Xprinter
   const handleDirectPrint = () => {
     window.print();
   };
 
-  // Function to generate and download the actual .pdf file (102mm x 65mm)
   const handleDownloadPdf = async () => {
     if (!badgeRef.current || !guest) return;
     setDownloadingPdf(true);
@@ -52,7 +59,7 @@ export default function BadgePrintPage() {
     try {
       const element = badgeRef.current;
       const canvas = await html2canvas(element, {
-        scale: 3, // Crisp 300+ DPI equivalent for thermal heads
+        scale: 3,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff'
@@ -60,7 +67,6 @@ export default function BadgePrintPage() {
 
       const imgData = canvas.toDataURL('image/png');
       
-      // Initialize jsPDF with exact Xprinter dimensions 102mm x 65mm
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
@@ -78,7 +84,6 @@ export default function BadgePrintPage() {
     }
   };
 
-  // Auto trigger Print or Download when requested via URL query params
   useEffect(() => {
     if (guest && !loading && !printTriggered.current) {
       printTriggered.current = true;
@@ -123,11 +128,11 @@ export default function BadgePrintPage() {
   return (
     <>
       <Head>
-        <title>Badge Xprinter — {guest.lastNameOrCompany} ({guest.refId})</title>
+        <title>Badge Xprinter 90° — {guest.lastNameOrCompany} ({guest.refId})</title>
         <style>{`
           @media print {
             @page {
-              size: 102mm 65mm landscape;
+              size: 102mm 65mm;
               margin: 0;
             }
             html, body {
@@ -143,18 +148,31 @@ export default function BadgePrintPage() {
             .no-print {
               display: none !important;
             }
+            .badge-print-wrapper {
+              width: 102mm !important;
+              height: 65mm !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              overflow: hidden !important;
+              background: #ffffff !important;
+              padding: 0 !important;
+              margin: 0 !important;
+            }
             .badge-card {
               box-shadow: none !important;
               border: none !important;
-              width: 102mm !important;
-              height: 65mm !important;
-              min-width: 102mm !important;
-              max-width: 102mm !important;
-              min-height: 65mm !important;
-              max-height: 65mm !important;
+              width: 65mm !important;
+              height: 102mm !important;
+              min-width: 65mm !important;
+              max-width: 65mm !important;
+              min-height: 102mm !important;
+              max-height: 102mm !important;
               border-radius: 0 !important;
               margin: 0 !important;
-              padding: 3mm 5mm !important;
+              padding: 3mm 4mm !important;
+              transform: ${rotation === '0' ? 'none' : `rotate(${rotation}deg)`} !important;
+              transform-origin: center center !important;
             }
           }
         `}</style>
@@ -185,12 +203,42 @@ export default function BadgePrintPage() {
             Fermer
           </Button>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Format Xprinter (102 mm × 65 mm) — {guest.lastNameOrCompany} ({guest.refId})
+            Badge Xprinter 102 mm × 65 mm (Rotation {rotation}°)
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          {/* Download PDF Button */}
+        {/* Action Controls & Rotation Selector */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+          <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <RotateCw size={14} /> Sens :
+          </Typography>
+          <ToggleButtonGroup
+            value={rotation}
+            exclusive
+            onChange={(e, val) => val && setRotation(val)}
+            size="small"
+            sx={{
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              '& .MuiToggleButton-root': {
+                color: '#e2e8f0',
+                py: 0.5,
+                px: 1.5,
+                fontSize: '0.75rem',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                '&.Mui-selected': {
+                  bgcolor: '#fdb700',
+                  color: '#1e0824',
+                  fontWeight: 800,
+                  '&:hover': { bgcolor: '#fecb43' }
+                }
+              }
+            }}
+          >
+            <ToggleButton value="-90">90° Gauche → Droite</ToggleButton>
+            <ToggleButton value="90">90° Droite → Gauche</ToggleButton>
+            <ToggleButton value="0">0° Direct</ToggleButton>
+          </ToggleButtonGroup>
+
           <Button
             variant="contained"
             disabled={downloadingPdf}
@@ -198,10 +246,9 @@ export default function BadgePrintPage() {
             startIcon={downloadingPdf ? <CircularProgress size={16} color="inherit" /> : <Download size={18} />}
             sx={{ bgcolor: '#fdb700', color: '#1e0824', '&:hover': { bgcolor: '#fecb43' }, fontWeight: 800 }}
           >
-            {downloadingPdf ? 'Génération...' : 'Télécharger PDF (.pdf)'}
+            {downloadingPdf ? 'PDF...' : 'Télécharger PDF'}
           </Button>
 
-          {/* Print Button */}
           <Button
             variant="contained"
             onClick={handleDirectPrint}
@@ -224,199 +271,229 @@ export default function BadgePrintPage() {
           p: 3
         }}
       >
-        {/* Physical Badge Layout: EXACT Largeur 102mm x Hauteur 65mm */}
-        <Paper
-          ref={badgeRef}
-          id="badge-to-print"
-          className="badge-card badge-print-container"
-          elevation={4}
+        <Box
+          className="badge-print-wrapper"
           sx={{
             width: '102mm',
             height: '65mm',
-            minWidth: '102mm',
-            maxWidth: '102mm',
-            minHeight: '65mm',
-            maxHeight: '65mm',
-            bgcolor: '#ffffff',
-            borderRadius: '8px',
-            border: '1px solid #f0e6f2',
-            p: '3mm 5mm',
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
             alignItems: 'center',
-            textAlign: 'center',
-            boxSizing: 'border-box',
-            position: 'relative',
-            overflow: 'hidden'
+            justifyContent: 'center',
+            overflow: 'visible',
+            position: 'relative'
           }}
         >
-          {/* Top Decorative Border (Violet + Gold) */}
-          <Box
+          {/* Card: 65mm x 102mm rotated 90deg to fit exactly in 102mm x 65mm */}
+          <Paper
+            ref={badgeRef}
+            id="badge-to-print"
+            className="badge-card badge-print-container"
+            elevation={4}
             sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '4px',
-              bgcolor: '#722083',
-              borderBottom: '1px solid #fdb700'
-            }}
-          />
-
-          {/* 1. EN HAUT AU CENTRE : LOGO */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', pt: '1mm', width: '100%' }}>
-            <img
-              src="/logo-acronyme.png"
-              alt="Logo BDL"
-              crossOrigin="anonymous"
-              style={{
-                height: '13mm',
-                maxWidth: '52mm',
-                objectFit: 'contain'
-              }}
-              onError={(e) => {
-                e.target.src = '/LOGO-ACRONYME-.png';
-              }}
-            />
-          </Box>
-
-          {/* 2. JUSTE EN BAS : NOM DE L'ÉVÉNEMENT */}
-          <Typography
-            sx={{
-              fontSize: '8.5pt',
-              fontWeight: 800,
-              color: '#722083',
-              lineHeight: 1.15,
-              textTransform: 'uppercase',
-              letterSpacing: '0.02em',
-              maxWidth: '92mm',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {guest.event?.name || 'ASSEMBLÉE GÉNÉRALE ORDINAIRE 2026'}
-          </Typography>
-
-          {/* 3. EN BAS : BANQUE DE DÉVELOPPEMENT LOCAL - BDL */}
-          <Typography
-            sx={{
-              fontSize: '6.5pt',
-              fontWeight: 700,
-              color: '#475569',
-              lineHeight: 1.1,
-              letterSpacing: '0.02em',
-              textTransform: 'uppercase'
-            }}
-          >
-            Banque de Développement Local - BDL
-          </Typography>
-
-          {/* 4. EN BAS : REGISTRED / STATUT */}
-          <Box sx={{ my: '0.5mm' }}>
-            <Box
-              sx={{
-                display: 'inline-block',
-                bgcolor: guest.guestType === 'VIP' ? '#fef3c7' : '#fcf4ff',
-                color: guest.guestType === 'VIP' ? '#92400e' : '#722083',
-                border: guest.guestType === 'VIP' ? '1px solid #fde68a' : '1px solid #f0d6f7',
-                fontSize: '6.5pt',
-                fontWeight: 800,
-                px: '8px',
-                py: '1.5px',
-                borderRadius: '4px',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase'
-              }}
-            >
-              {guestStatusText}
-            </Box>
-          </Box>
-
-          {/* 5. EN BAS : NOM PRÉNOM */}
-          <Box sx={{ width: '100%', px: '2mm' }}>
-            <Typography
-              sx={{
-                fontSize: '12pt',
-                fontWeight: 900,
-                color: '#1e0824',
-                lineHeight: 1.15,
-                wordBreak: 'break-word',
-                textTransform: 'uppercase',
-                letterSpacing: '-0.01em'
-              }}
-            >
-              {guest.lastNameOrCompany} {guest.firstName ? guest.firstName : ''}
-            </Typography>
-          </Box>
-
-          {/* 6. PUIS : NOMBRE D'ACTIONS */}
-          {guest.numberOfShares > 0 ? (
-            <Box
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: '#fffbeb',
-                border: '1px solid #fde68a',
-                color: '#b45309',
-                px: '7px',
-                py: '1px',
-                borderRadius: '3px',
-                fontSize: '7pt',
-                fontWeight: 800,
-                letterSpacing: '0.02em'
-              }}
-            >
-              <span>{guest.numberOfShares.toLocaleString('fr-FR')} ACTIONS</span>
-            </Box>
-          ) : (
-            <Box sx={{ height: '3px' }} />
-          )}
-
-          {/* 7. PUIS : LA RÉFÉRENCE + DATE + QR CODE */}
-          <Box
-            sx={{
-              width: '100%',
+              width: '65mm',
+              height: '102mm',
+              minWidth: '65mm',
+              maxWidth: '65mm',
+              minHeight: '102mm',
+              maxHeight: '102mm',
+              bgcolor: '#ffffff',
+              borderRadius: '6px',
+              border: '1px solid #f0e6f2',
+              p: '3.5mm 4mm',
               display: 'flex',
+              flexDirection: 'column',
               justifyContent: 'space-between',
               alignItems: 'center',
-              borderTop: '1px solid #f1e5f5',
-              pt: '1mm',
-              mt: '0.5mm'
+              textAlign: 'center',
+              boxSizing: 'border-box',
+              position: 'relative',
+              overflow: 'hidden',
+              transform: rotation === '0' ? 'none' : `rotate(${rotation}deg)`,
+              transformOrigin: 'center center',
+              transition: 'transform 0.2s ease'
             }}
           >
-            {/* Référence */}
+            {/* Top Decorative Border (Violet + Gold) */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '4px',
+                bgcolor: '#722083',
+                borderBottom: '1px solid #fdb700'
+              }}
+            />
+
+            {/* 1. EN HAUT AU CENTRE : LOGO BDL */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', pt: '1mm', width: '100%' }}>
+              <img
+                src="/logo-acronyme.png"
+                alt="Logo BDL"
+                crossOrigin="anonymous"
+                style={{
+                  height: '15mm',
+                  maxWidth: '48mm',
+                  objectFit: 'contain'
+                }}
+                onError={(e) => {
+                  e.target.src = '/LOGO-ACRONYME-.png';
+                }}
+              />
+            </Box>
+
+            {/* 2. JUSTE EN BAS : NOM DE L'ÉVÉNEMENT */}
             <Typography
               sx={{
                 fontSize: '8pt',
-                fontWeight: 900,
+                fontWeight: 800,
                 color: '#722083',
-                letterSpacing: '0.05em',
-                fontFamily: 'monospace'
+                lineHeight: 1.15,
+                textTransform: 'uppercase',
+                letterSpacing: '0.02em',
+                px: '1mm',
+                wordBreak: 'break-word'
               }}
             >
-              {guest.refId}
+              {guest.event?.name || 'ASSEMBLÉE GÉNÉRALE ORDINAIRE 2026'}
             </Typography>
 
-            {/* Mention Footer */}
-            <Typography sx={{ fontSize: '5.5pt', color: '#94a3b8', fontWeight: 600 }}>
-              {new Date().toLocaleDateString('fr-FR')} • EL-MOULTAKA APP
+            {/* 3. EN BAS : BANQUE DE DÉVELOPPEMENT LOCAL - BDL */}
+            <Typography
+              sx={{
+                fontSize: '6.5pt',
+                fontWeight: 700,
+                color: '#475569',
+                lineHeight: 1.1,
+                letterSpacing: '0.02em',
+                textTransform: 'uppercase',
+                mt: '0.5mm'
+              }}
+            >
+              Banque de Développement Local - BDL
             </Typography>
 
-            {/* QR Code */}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <QRCodeSVG
-                value={qrData}
-                size={30}
-                level="M"
-                includeMargin={false}
-                fgColor="#1e0824"
-              />
+            {/* 4. EN BAS : REGISTRED / STATUT */}
+            <Box sx={{ my: '0.5mm' }}>
+              <Box
+                sx={{
+                  display: 'inline-block',
+                  bgcolor: guest.guestType === 'VIP' ? '#fef3c7' : '#fcf4ff',
+                  color: guest.guestType === 'VIP' ? '#92400e' : '#722083',
+                  border: guest.guestType === 'VIP' ? '1px solid #fde68a' : '1px solid #f0d6f7',
+                  fontSize: '6.5pt',
+                  fontWeight: 800,
+                  px: '8px',
+                  py: '1.5px',
+                  borderRadius: '3px',
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase'
+                }}
+              >
+                {guestStatusText}
+              </Box>
             </Box>
-          </Box>
-        </Paper>
+
+            {/* 5. EN BAS : NOM PRÉNOM */}
+            <Box sx={{ width: '100%', px: '1mm' }}>
+              <Typography
+                sx={{
+                  fontSize: '11.5pt',
+                  fontWeight: 900,
+                  color: '#1e0824',
+                  lineHeight: 1.15,
+                  wordBreak: 'break-word',
+                  textTransform: 'uppercase',
+                  letterSpacing: '-0.01em'
+                }}
+              >
+                {guest.lastNameOrCompany}
+              </Typography>
+              {guest.firstName && (
+                <Typography
+                  sx={{
+                    fontSize: '10pt',
+                    fontWeight: 700,
+                    color: '#475569',
+                    lineHeight: 1.15,
+                    wordBreak: 'break-word',
+                    textTransform: 'capitalize',
+                    mt: '1px'
+                  }}
+                >
+                  {guest.firstName}
+                </Typography>
+              )}
+            </Box>
+
+            {/* 6. PUIS : NOMBRE D'ACTIONS */}
+            {guest.numberOfShares > 0 ? (
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: '#fffbeb',
+                  border: '1px solid #fde68a',
+                  color: '#b45309',
+                  px: '8px',
+                  py: '1.5px',
+                  borderRadius: '3px',
+                  fontSize: '7pt',
+                  fontWeight: 800,
+                  letterSpacing: '0.02em'
+                }}
+              >
+                <span>{guest.numberOfShares.toLocaleString('fr-FR')} ACTIONS</span>
+              </Box>
+            ) : (
+              <Box sx={{ height: '3px' }} />
+            )}
+
+            {/* 7. PUIS : LA RÉFÉRENCE + QR CODE */}
+            <Box
+              sx={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                borderTop: '1px solid #f1e5f5',
+                pt: '1mm',
+                mt: '0.5mm'
+              }}
+            >
+              {/* QR Code */}
+              <Box sx={{ my: '0.5mm' }}>
+                <QRCodeSVG
+                  value={qrData}
+                  size={42}
+                  level="M"
+                  includeMargin={false}
+                  fgColor="#1e0824"
+                />
+              </Box>
+
+              {/* Référence */}
+              <Typography
+                sx={{
+                  fontSize: '8pt',
+                  fontWeight: 900,
+                  color: '#722083',
+                  letterSpacing: '0.05em',
+                  fontFamily: 'monospace'
+                }}
+              >
+                {guest.refId}
+              </Typography>
+
+              {/* Mention Footer */}
+              <Typography sx={{ fontSize: '5pt', color: '#94a3b8', fontWeight: 600, mt: '1px' }}>
+                {new Date().toLocaleDateString('fr-FR')} • EL-MOULTAKA APP
+              </Typography>
+            </Box>
+          </Paper>
+        </Box>
       </Box>
     </>
   );
