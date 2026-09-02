@@ -228,6 +228,13 @@ export default function CheckInPage() {
     const guest = guestToPrint || selectedGuest;
     if (!guest) return;
 
+    // Open new tab immediately to prevent modern browser popup blockers
+    const printUrl = `/badge/${guest.refId}?autoPrint=true`;
+    const printWindow = window.open(printUrl, '_blank');
+    if (printWindow) {
+      printWindow.focus();
+    }
+
     setIsPrinting(true);
     try {
       playPrintSound();
@@ -238,13 +245,6 @@ export default function CheckInPage() {
         guestId: guest.id,
         printerName
       });
-
-      // Open print window / popup
-      const printUrl = `/badge/${guest.refId}?autoPrint=true`;
-      const printWindow = window.open(printUrl, '_blank', 'width=450,height=600');
-      if (printWindow) {
-        printWindow.focus();
-      }
     } catch (err) {
       console.error('Erreur impression badge:', err);
     } finally {

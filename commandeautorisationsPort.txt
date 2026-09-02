@@ -1,0 +1,34 @@
+Tout a été configuré pour que votre PC agisse en tant que serveur et que tous les autres ordinateurs du réseau local (LAN / Wi-Fi) puissent y accéder directement.
+
+🌐 Adresse IP de votre PC serveur :
+👉 192.168.0.124
+
+⚙️ Ce qui a été configuré :
+Backend (Node.js / Express) :
+Écoute sur toutes les interfaces réseau : 0.0.0.0 sur le port 5000.
+CORS configuré pour autoriser toutes les machines du réseau.
+Frontend (Next.js) :
+Mis à jour dans package.json pour écouter sur 0.0.0.0 : "dev": "next dev -H 0.0.0.0 -p 3000".
+Les requêtes API et Socket.IO sont automatiquement routées vers votre backend.
+🚀 Comment lancer sur ce PC :
+Dans deux terminaux séparés :
+
+Terminal 1 (Backend) :
+
+bash
+cd e:\FreeLance\EvenementApp\backend
+npm run dev
+Terminal 2 (Frontend) :
+
+bash
+cd e:\FreeLance\EvenementApp\frontend
+npm run dev
+💻 Comment accéder depuis les AUTRES PC du réseau :
+Ouvrez simplement le navigateur (Google Chrome, Edge, etc.) sur n'importe quel autre PC et tapez l'adresse :
+
+👉 http://192.168.0.124:3000
+
+🛡️ En cas de blocage par le Pare-feu Windows (Si les autres PC ne chargent pas) :
+Si les autres ordinateurs n'arrivent pas à joindre http://192.168.0.124:3000, ouvrez PowerShell en mode Administrateur sur votre PC serveur et exécutez cette commande pour autoriser les ports :
+
+New-NetFirewallRule -DisplayName "El-Moultaka App (Ports 3000 & 5000)" -Direction Inbound -LocalPort 3000,5000 -Protocol TCP -Action Allow

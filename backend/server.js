@@ -70,7 +70,7 @@ async function startServer() {
     await sequelize.sync({ alter: true });
     console.log('✅ Synchronisation des tables effectuée avec succès.');
 
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Serveur Backend El-Moultaka App en cours d'exécution sur le port ${PORT}`);
     });
   } catch (error) {

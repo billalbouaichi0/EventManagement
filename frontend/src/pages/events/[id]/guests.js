@@ -130,13 +130,18 @@ export default function GuestsPage() {
   };
 
   const handlePrintBadge = async (guest) => {
+    if (!guest) return;
+    const printUrl = `/badge/${guest.refId}?autoPrint=true`;
+    const printWindow = window.open(printUrl, '_blank');
+    if (printWindow) {
+      printWindow.focus();
+    }
     try {
       await api.post('/badges/print', {
         eventId,
         guestId: guest.id,
         printerName
       });
-      window.open(`/badge/${guest.refId}?autoPrint=true`, '_blank', 'width=450,height=600');
     } catch (err) {
       console.error('Erreur impression:', err);
     }
