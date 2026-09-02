@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { QRCodeSVG } from 'qrcode.react';
 import {
   Box,
   Typography,
@@ -9,8 +8,7 @@ import {
   CircularProgress,
   Paper,
   ToggleButton,
-  ToggleButtonGroup,
-  Alert
+  ToggleButtonGroup
 } from '@mui/material';
 import { Printer, ArrowLeft, Download, RotateCw, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
@@ -117,19 +115,12 @@ export default function BadgePrintPage() {
     );
   }
 
-  const qrData = JSON.stringify({
-    ref: guest.refId,
-    id: guest.id,
-    name: `${guest.lastNameOrCompany} ${guest.firstName || ''}`.trim(),
-    event: guest.event?.name || 'BDL Event'
-  });
-
   const guestStatusText = guest.guestType === 'VIP' ? '★ VIP' : (guest.guestType === 'ORGANIZATION' ? 'ORGANISATION' : (guest.guestType === 'PRESS' ? 'PRESSE' : 'REGISTERED'));
 
   return (
     <>
       <Head>
-        <title>Badge Xprinter 90° — {guest.lastNameOrCompany} ({guest.refId})</title>
+        <title>Badge Xprinter — {guest.lastNameOrCompany} ({guest.refId})</title>
         <style>{`
           @media print {
             @page {
@@ -185,7 +176,7 @@ export default function BadgePrintPage() {
               max-height: 102mm !important;
               border-radius: 0 !important;
               margin: 0 !important;
-              padding: 1.5mm 2.5mm !important;
+              padding: 2mm 3mm !important;
               transform: ${rotation === '0' ? 'none' : `rotate(${rotation}deg)`} !important;
               transform-origin: center center !important;
             }
@@ -218,7 +209,7 @@ export default function BadgePrintPage() {
             Fermer
           </Button>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Badge Xprinter 102 mm × 65 mm (Zéro Marge)
+            Badge Xprinter 102 mm × 65 mm — {guest.lastNameOrCompany} ({guest.refId})
           </Typography>
         </Box>
 
@@ -279,7 +270,7 @@ export default function BadgePrintPage() {
       <Box className="no-print" sx={{ bgcolor: '#fdf9ff', borderBottom: '1px solid #f0e6f2', px: 3, py: 1, display: 'flex', justifyContent: 'center' }}>
         <Typography variant="caption" sx={{ color: '#722083', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
           <CheckCircle2 size={14} color="#722083" />
-          Astuce Xprinter : Dans la fenêtre d'impression, choisissez <b>Marges : « Aucune »</b> et <b>Échelle : 100% (ou Ajuster)</b> pour un remplissage parfait sans bordure blanche.
+          Astuce Xprinter : Dans les paramètres d'impression du navigateur, mettez <b>Marges : « Aucune »</b> et <b>Échelle : 100%</b>.
         </Typography>
       </Box>
 
@@ -322,7 +313,7 @@ export default function BadgePrintPage() {
               bgcolor: '#ffffff',
               borderRadius: '0px',
               border: '1px solid #f0e6f2',
-              p: '2mm 3mm',
+              p: '3mm 4mm',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -350,14 +341,14 @@ export default function BadgePrintPage() {
             />
 
             {/* 1. EN HAUT AU CENTRE : LOGO BDL */}
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', pt: '1mm', width: '100%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', pt: '2mm', width: '100%' }}>
               <img
                 src="/logo-acronyme.png"
                 alt="Logo BDL"
                 crossOrigin="anonymous"
                 style={{
-                  height: '16mm',
-                  maxWidth: '52mm',
+                  height: '18mm',
+                  maxWidth: '54mm',
                   objectFit: 'contain'
                 }}
                 onError={(e) => {
@@ -369,13 +360,14 @@ export default function BadgePrintPage() {
             {/* 2. JUSTE EN BAS : NOM DE L'ÉVÉNEMENT */}
             <Typography
               sx={{
-                fontSize: '8.5pt',
+                fontSize: '9pt',
                 fontWeight: 800,
                 color: '#722083',
-                lineHeight: 1.15,
+                lineHeight: 1.2,
                 textTransform: 'uppercase',
                 letterSpacing: '0.02em',
                 px: '0.5mm',
+                mt: '1mm',
                 wordBreak: 'break-word'
               }}
             >
@@ -385,7 +377,7 @@ export default function BadgePrintPage() {
             {/* 3. EN BAS : BANQUE DE DÉVELOPPEMENT LOCAL - BDL */}
             <Typography
               sx={{
-                fontSize: '6.5pt',
+                fontSize: '7pt',
                 fontWeight: 700,
                 color: '#475569',
                 lineHeight: 1.1,
@@ -398,18 +390,18 @@ export default function BadgePrintPage() {
             </Typography>
 
             {/* 4. EN BAS : REGISTRED / STATUT */}
-            <Box sx={{ my: '0.5mm' }}>
+            <Box sx={{ my: '1.5mm' }}>
               <Box
                 sx={{
                   display: 'inline-block',
                   bgcolor: guest.guestType === 'VIP' ? '#fef3c7' : '#fcf4ff',
                   color: guest.guestType === 'VIP' ? '#92400e' : '#722083',
                   border: guest.guestType === 'VIP' ? '1px solid #fde68a' : '1px solid #f0d6f7',
-                  fontSize: '7pt',
+                  fontSize: '7.5pt',
                   fontWeight: 800,
-                  px: '10px',
-                  py: '1.5px',
-                  borderRadius: '3px',
+                  px: '12px',
+                  py: '2px',
+                  borderRadius: '4px',
                   letterSpacing: '0.05em',
                   textTransform: 'uppercase'
                 }}
@@ -419,13 +411,13 @@ export default function BadgePrintPage() {
             </Box>
 
             {/* 5. EN BAS : NOM PRÉNOM */}
-            <Box sx={{ width: '100%', px: '0.5mm' }}>
+            <Box sx={{ width: '100%', px: '0.5mm', my: '2mm' }}>
               <Typography
                 sx={{
-                  fontSize: '12pt',
+                  fontSize: '13pt',
                   fontWeight: 900,
                   color: '#1e0824',
-                  lineHeight: 1.15,
+                  lineHeight: 1.2,
                   wordBreak: 'break-word',
                   textTransform: 'uppercase',
                   letterSpacing: '-0.01em'
@@ -436,13 +428,13 @@ export default function BadgePrintPage() {
               {guest.firstName && (
                 <Typography
                   sx={{
-                    fontSize: '10.5pt',
+                    fontSize: '11.5pt',
                     fontWeight: 700,
                     color: '#475569',
-                    lineHeight: 1.15,
+                    lineHeight: 1.2,
                     wordBreak: 'break-word',
                     textTransform: 'capitalize',
-                    mt: '1px'
+                    mt: '2px'
                   }}
                 >
                   {guest.firstName}
@@ -450,31 +442,7 @@ export default function BadgePrintPage() {
               )}
             </Box>
 
-            {/* 6. PUIS : NOMBRE D'ACTIONS */}
-            {guest.numberOfShares > 0 ? (
-              <Box
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: '#fffbeb',
-                  border: '1px solid #fde68a',
-                  color: '#b45309',
-                  px: '8px',
-                  py: '1.5px',
-                  borderRadius: '3px',
-                  fontSize: '7.5pt',
-                  fontWeight: 800,
-                  letterSpacing: '0.02em'
-                }}
-              >
-                <span>{guest.numberOfShares.toLocaleString('fr-FR')} ACTIONS</span>
-              </Box>
-            ) : (
-              <Box sx={{ height: '3px' }} />
-            )}
-
-            {/* 7. PUIS : LA RÉFÉRENCE + QR CODE */}
+            {/* 6. PUIS : LA RÉFÉRENCE & DATE (SANS QR CODE NI ACTIONS) */}
             <Box
               sx={{
                 width: '100%',
@@ -482,28 +450,18 @@ export default function BadgePrintPage() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 borderTop: '1px solid #f1e5f5',
-                pt: '1mm',
-                mt: '0.5mm'
+                pt: '1.5mm',
+                mt: '1mm',
+                pb: '1mm'
               }}
             >
-              {/* QR Code */}
-              <Box sx={{ my: '0.5mm' }}>
-                <QRCodeSVG
-                  value={qrData}
-                  size={46}
-                  level="M"
-                  includeMargin={false}
-                  fgColor="#1e0824"
-                />
-              </Box>
-
               {/* Référence */}
               <Typography
                 sx={{
-                  fontSize: '8.5pt',
+                  fontSize: '9.5pt',
                   fontWeight: 900,
                   color: '#722083',
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.06em',
                   fontFamily: 'monospace'
                 }}
               >
@@ -511,7 +469,7 @@ export default function BadgePrintPage() {
               </Typography>
 
               {/* Mention Footer */}
-              <Typography sx={{ fontSize: '5.5pt', color: '#94a3b8', fontWeight: 600, mt: '1px' }}>
+              <Typography sx={{ fontSize: '6pt', color: '#94a3b8', fontWeight: 600, mt: '1px' }}>
                 {new Date().toLocaleDateString('fr-FR')} • EL-MOULTAKA APP
               </Typography>
             </Box>
