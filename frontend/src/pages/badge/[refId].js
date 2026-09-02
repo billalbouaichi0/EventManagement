@@ -9,9 +9,10 @@ import {
   CircularProgress,
   Paper,
   ToggleButton,
-  ToggleButtonGroup
+  ToggleButtonGroup,
+  Alert
 } from '@mui/material';
-import { Printer, ArrowLeft, Download, RotateCw } from 'lucide-react';
+import { Printer, ArrowLeft, Download, RotateCw, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -133,17 +134,27 @@ export default function BadgePrintPage() {
           @media print {
             @page {
               size: 102mm 65mm;
-              margin: 0;
+              margin: 0mm !important;
+              padding: 0mm !important;
+            }
+            * {
+              margin: 0 !important;
+              padding: 0 !important;
+              box-sizing: border-box !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
             html, body {
               width: 102mm !important;
               height: 65mm !important;
+              min-width: 102mm !important;
+              min-height: 65mm !important;
+              max-width: 102mm !important;
+              max-height: 65mm !important;
               margin: 0 !important;
               padding: 0 !important;
               overflow: hidden !important;
               background: #ffffff !important;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
             }
             .no-print {
               display: none !important;
@@ -151,6 +162,10 @@ export default function BadgePrintPage() {
             .badge-print-wrapper {
               width: 102mm !important;
               height: 65mm !important;
+              min-width: 102mm !important;
+              min-height: 65mm !important;
+              max-width: 102mm !important;
+              max-height: 65mm !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
@@ -170,7 +185,7 @@ export default function BadgePrintPage() {
               max-height: 102mm !important;
               border-radius: 0 !important;
               margin: 0 !important;
-              padding: 3mm 4mm !important;
+              padding: 1.5mm 2.5mm !important;
               transform: ${rotation === '0' ? 'none' : `rotate(${rotation}deg)`} !important;
               transform-origin: center center !important;
             }
@@ -203,7 +218,7 @@ export default function BadgePrintPage() {
             Fermer
           </Button>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Badge Xprinter 102 mm × 65 mm (Rotation {rotation}°)
+            Badge Xprinter 102 mm × 65 mm (Zéro Marge)
           </Typography>
         </Box>
 
@@ -260,15 +275,23 @@ export default function BadgePrintPage() {
         </Box>
       </Box>
 
+      {/* Guide Banner for Printer Margins */}
+      <Box className="no-print" sx={{ bgcolor: '#fdf9ff', borderBottom: '1px solid #f0e6f2', px: 3, py: 1, display: 'flex', justifyContent: 'center' }}>
+        <Typography variant="caption" sx={{ color: '#722083', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CheckCircle2 size={14} color="#722083" />
+          Astuce Xprinter : Dans la fenêtre d'impression, choisissez <b>Marges : « Aucune »</b> et <b>Échelle : 100% (ou Ajuster)</b> pour un remplissage parfait sans bordure blanche.
+        </Typography>
+      </Box>
+
       {/* Badge Viewport Container */}
       <Box
         sx={{
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          minHeight: 'calc(100vh - 70px)',
+          minHeight: 'calc(100vh - 120px)',
           bgcolor: '#fbf9fc',
-          p: 3
+          p: 2
         }}
       >
         <Box
@@ -283,12 +306,12 @@ export default function BadgePrintPage() {
             position: 'relative'
           }}
         >
-          {/* Card: 65mm x 102mm rotated 90deg to fit exactly in 102mm x 65mm */}
+          {/* Card: 65mm x 102mm rotated 90deg to fill 102mm x 65mm */}
           <Paper
             ref={badgeRef}
             id="badge-to-print"
             className="badge-card badge-print-container"
-            elevation={4}
+            elevation={3}
             sx={{
               width: '65mm',
               height: '102mm',
@@ -297,9 +320,9 @@ export default function BadgePrintPage() {
               minHeight: '102mm',
               maxHeight: '102mm',
               bgcolor: '#ffffff',
-              borderRadius: '6px',
+              borderRadius: '0px',
               border: '1px solid #f0e6f2',
-              p: '3.5mm 4mm',
+              p: '2mm 3mm',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -333,8 +356,8 @@ export default function BadgePrintPage() {
                 alt="Logo BDL"
                 crossOrigin="anonymous"
                 style={{
-                  height: '15mm',
-                  maxWidth: '48mm',
+                  height: '16mm',
+                  maxWidth: '52mm',
                   objectFit: 'contain'
                 }}
                 onError={(e) => {
@@ -346,13 +369,13 @@ export default function BadgePrintPage() {
             {/* 2. JUSTE EN BAS : NOM DE L'ÉVÉNEMENT */}
             <Typography
               sx={{
-                fontSize: '8pt',
+                fontSize: '8.5pt',
                 fontWeight: 800,
                 color: '#722083',
                 lineHeight: 1.15,
                 textTransform: 'uppercase',
                 letterSpacing: '0.02em',
-                px: '1mm',
+                px: '0.5mm',
                 wordBreak: 'break-word'
               }}
             >
@@ -382,9 +405,9 @@ export default function BadgePrintPage() {
                   bgcolor: guest.guestType === 'VIP' ? '#fef3c7' : '#fcf4ff',
                   color: guest.guestType === 'VIP' ? '#92400e' : '#722083',
                   border: guest.guestType === 'VIP' ? '1px solid #fde68a' : '1px solid #f0d6f7',
-                  fontSize: '6.5pt',
+                  fontSize: '7pt',
                   fontWeight: 800,
-                  px: '8px',
+                  px: '10px',
                   py: '1.5px',
                   borderRadius: '3px',
                   letterSpacing: '0.05em',
@@ -396,10 +419,10 @@ export default function BadgePrintPage() {
             </Box>
 
             {/* 5. EN BAS : NOM PRÉNOM */}
-            <Box sx={{ width: '100%', px: '1mm' }}>
+            <Box sx={{ width: '100%', px: '0.5mm' }}>
               <Typography
                 sx={{
-                  fontSize: '11.5pt',
+                  fontSize: '12pt',
                   fontWeight: 900,
                   color: '#1e0824',
                   lineHeight: 1.15,
@@ -413,7 +436,7 @@ export default function BadgePrintPage() {
               {guest.firstName && (
                 <Typography
                   sx={{
-                    fontSize: '10pt',
+                    fontSize: '10.5pt',
                     fontWeight: 700,
                     color: '#475569',
                     lineHeight: 1.15,
@@ -440,7 +463,7 @@ export default function BadgePrintPage() {
                   px: '8px',
                   py: '1.5px',
                   borderRadius: '3px',
-                  fontSize: '7pt',
+                  fontSize: '7.5pt',
                   fontWeight: 800,
                   letterSpacing: '0.02em'
                 }}
@@ -467,7 +490,7 @@ export default function BadgePrintPage() {
               <Box sx={{ my: '0.5mm' }}>
                 <QRCodeSVG
                   value={qrData}
-                  size={42}
+                  size={46}
                   level="M"
                   includeMargin={false}
                   fgColor="#1e0824"
@@ -477,7 +500,7 @@ export default function BadgePrintPage() {
               {/* Référence */}
               <Typography
                 sx={{
-                  fontSize: '8pt',
+                  fontSize: '8.5pt',
                   fontWeight: 900,
                   color: '#722083',
                   letterSpacing: '0.05em',
@@ -488,7 +511,7 @@ export default function BadgePrintPage() {
               </Typography>
 
               {/* Mention Footer */}
-              <Typography sx={{ fontSize: '5pt', color: '#94a3b8', fontWeight: 600, mt: '1px' }}>
+              <Typography sx={{ fontSize: '5.5pt', color: '#94a3b8', fontWeight: 600, mt: '1px' }}>
                 {new Date().toLocaleDateString('fr-FR')} • EL-MOULTAKA APP
               </Typography>
             </Box>
