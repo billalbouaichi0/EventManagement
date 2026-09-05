@@ -20,6 +20,31 @@ export default function(sequelize) {
       allowNull: false,
       defaultValue: 'PRESENT'
     },
+    attendanceType: {
+      type: DataTypes.ENUM('SELF', 'PROXY'),
+      allowNull: false,
+      defaultValue: 'SELF'
+    },
+    representativeLastName: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    representativeFirstName: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    representativeNIN: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    representativePosition: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    representativeNotes: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     checkedInAt: {
       type: DataTypes.DATE,
       allowNull: false,

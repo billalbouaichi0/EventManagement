@@ -12,10 +12,12 @@ Remarque : Si vous avez plusieurs événements, remplacez `eventId = 1` par l'ID
 1. NOMBRE TOTAL D'INVITÉS PRÉSENTS (ÉMARGÉS) ET TOTAL DES ACTIONS
 --------------------------------------------------------------------------------
 
--- 1.1 Nombre total de présents pour un événement spécifique
+-- 1.1 Nombre total de présents (avec distinction Titulaire direct vs Mandataire)
 SELECT 
     e.name AS Evenement,
-    COUNT(a.id) AS Nombre_Presents,
+    COUNT(a.id) AS Total_Presents,
+    COUNT(CASE WHEN a.attendanceType = 'SELF' THEN 1 END) AS Presents_En_Personne_Titulaire,
+    COUNT(CASE WHEN a.attendanceType = 'PROXY' THEN 1 END) AS Presents_Par_Mandataire,
     COALESCE(SUM(g.numberOfShares), 0) AS Total_Actions_Representees
 FROM attendances a
 JOIN guests g ON a.guestId = g.id
@@ -67,7 +69,7 @@ ORDER BY Total_Badges_Imprimes DESC;
 
 
 --------------------------------------------------------------------------------
-3. LISTE DES PRÉSENTS AVEC L'AGENT QUI A ÉMARGÉ ET/OU IMPRIMÉ LE BADGE
+3. LISTE DES PRÉSENTS AVEC TYPE D'ÉMARGEMENT, AGENT ET IMPRESSION DE BADGE
 --------------------------------------------------------------------------------
 
 SELECT 
@@ -76,6 +78,12 @@ SELECT
     COALESCE(g.firstName, '') AS Prenom,
     g.numberOfShares AS Nombre_Actions,
     g.guestType AS Type_Invite,
+    CASE 
+        WHEN a.attendanceType = 'PROXY' THEN 'MANDATAIRE / REPRÉSENTANT'
+        ELSE 'EN PERSONNE (TITULAIRE)'
+    END AS Mode_Presence,
+    COALESCE(CONCAT(a.representativeLastName, ' ', COALESCE(a.representativeFirstName, '')), '-') AS Mandataire_Nom_Prenom,
+    COALESCE(a.representativePosition, '-') AS Mandataire_Poste_Fonction,
     a.checkedInAt AS Date_Heure_Emargement,
     a.workstation AS Poste_Guichet,
     agentCheckin.fullName AS Enregistre_Par_Agent,
@@ -85,8 +93,7 @@ SELECT
         ELSE 'NON' 
     END AS Badge_Imprime,
     COUNT(bp.id) AS Nombre_Impressions_Badge,
-    MAX(bp.printedAt) AS Derniere_Impression_A,
-    GROUP_CONCAT(DISTINCT agentPrint.fullName SEPARATOR ', ') AS Imprime_Par_Agent
+    MAX(bp.printedAt) AS Derniere_Impression_A
 FROM attendances a
 JOIN guests g ON a.guestId = g.id
 JOIN users agentCheckin ON a.checkedInBy = agentCheckin.id
@@ -95,13 +102,14 @@ LEFT JOIN users agentPrint ON bp.printedBy = agentPrint.id
 WHERE a.eventId = 1 AND a.status = 'PRESENT'
 GROUP BY 
     g.id, g.refId, g.lastNameOrCompany, g.firstName, 
-    g.numberOfShares, g.guestType, a.checkedInAt, 
-    a.workstation, agentCheckin.fullName, agentCheckin.username
+    g.numberOfShares, g.guestType, a.attendanceType, 
+    a.representativeLastName, a.representativeFirstName, a.representativePosition,
+    a.checkedInAt, a.workstation, agentCheckin.fullName, agentCheckin.username
 ORDER BY a.checkedInAt DESC;
 
 
 --------------------------------------------------------------------------------
-4. LISTE DÉTAILLÉE DES PRÉSENTS AVEC NIN, RC, NIF, ADRESSE, WILAYA, BANQUE, ACTIONS
+4. LISTE DÉTAILLÉE DES PRÉSENTS AVEC TOUTES LES COORDONNÉES ET DÉTAILS MANDATAIRE
 --------------------------------------------------------------------------------
 
 SELECT 
@@ -110,7 +118,7 @@ SELECT
     g.lastNameOrCompany AS Nom_Ou_Raison_Sociale,
     COALESCE(g.firstName, '') AS Prenom,
     g.numberOfShares AS Nombre_Actions,
-    COALESCE(g.nationalIdentificationNumber, '') AS NIN,
+    COALESCE(g.nationalIdentificationNumber, '') AS NIN_Titulaire,
     COALESCE(g.registrationNumber, '') AS Registre_Commerce_RC,
     COALESCE(g.registrationIssueDate, '') AS Date_Delivrance_RC,
     COALESCE(g.taxIdentificationNumber, '') AS NIF,
@@ -119,6 +127,15 @@ SELECT
     COALESCE(g.address, '') AS Adresse,
     COALESCE(g.bank, '') AS Banque_Agence,
     g.guestType AS Categorie,
+    CASE 
+        WHEN a.attendanceType = 'PROXY' THEN 'MANDATAIRE'
+        ELSE 'TITULAIRE'
+    END AS Type_Presence,
+    COALESCE(a.representativeLastName, '') AS Mandataire_Nom,
+    COALESCE(a.representativeFirstName, '') AS Mandataire_Prenom,
+    COALESCE(a.representativeNIN, '') AS Mandataire_NIN,
+    COALESCE(a.representativePosition, '') AS Mandataire_Fonction,
+    COALESCE(a.representativeNotes, '') AS Mandataire_Observations,
     a.checkedInAt AS Date_Heure_Presence,
     a.workstation AS Poste_Guichet,
     u.fullName AS Agent_Operateur
@@ -137,6 +154,8 @@ SELECT
     u.fullName AS Nom_Agent,
     u.username AS Identifiant,
     COUNT(a.id) AS Total_Emargements_Realises,
+    COUNT(CASE WHEN a.attendanceType = 'SELF' THEN 1 END) AS Emargements_Directs,
+    COUNT(CASE WHEN a.attendanceType = 'PROXY' THEN 1 END) AS Emargements_Mandataires,
     COALESCE(SUM(g.numberOfShares), 0) AS Total_Actions_Validees,
     MIN(a.checkedInAt) AS Premier_Emargement,
     MAX(a.checkedInAt) AS Dernier_Emargement
@@ -155,6 +174,8 @@ ORDER BY Total_Emargements_Realises DESC;
 SELECT 
     DATE_FORMAT(a.checkedInAt, '%Y-%m-%d %H:00:00') AS Heure_Tranche,
     COUNT(a.id) AS Nombre_Arrivees,
+    COUNT(CASE WHEN a.attendanceType = 'SELF' THEN 1 END) AS Arrivees_Directes,
+    COUNT(CASE WHEN a.attendanceType = 'PROXY' THEN 1 END) AS Arrivees_Mandataires,
     SUM(g.numberOfShares) AS Actions_Arrivees
 FROM attendances a
 JOIN guests g ON a.guestId = g.id
@@ -179,3 +200,28 @@ FROM guests g
 LEFT JOIN attendances a ON g.id = a.guestId AND a.status = 'PRESENT'
 WHERE g.eventId = 1 AND a.id IS NULL
 ORDER BY g.lastNameOrCompany ASC;
+
+
+--------------------------------------------------------------------------------
+8. LISTE SPÉCIFIQUE DES ÉMARGEMENTS PAR MANDATAIRE / REPRÉSENTANT (PERSONNES MORALES & PHYSIQUES)
+--------------------------------------------------------------------------------
+
+SELECT 
+    g.refId AS Reference_Actionnaire,
+    g.lastNameOrCompany AS Actionnaire_Ou_Societe,
+    COALESCE(g.firstName, '') AS Prenom_Actionnaire,
+    g.numberOfShares AS Nombre_Actions,
+    COALESCE(g.registrationNumber, '') AS RC_Societe,
+    a.representativeLastName AS Nom_Mandataire,
+    COALESCE(a.representativeFirstName, '') AS Prenom_Mandataire,
+    COALESCE(a.representativeNIN, '') AS NIN_Mandataire,
+    COALESCE(a.representativePosition, '') AS Poste_Fonction_Mandataire,
+    COALESCE(a.representativeNotes, '') AS Observations_Procuration,
+    a.checkedInAt AS Date_Heure_Presence,
+    a.workstation AS Guichet,
+    u.fullName AS Valide_Par_Agent
+FROM attendances a
+JOIN guests g ON a.guestId = g.id
+JOIN users u ON a.checkedInBy = u.id
+WHERE a.eventId = 1 AND a.status = 'PRESENT' AND a.attendanceType = 'PROXY'
+ORDER BY a.checkedInAt ASC;

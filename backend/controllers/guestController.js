@@ -309,10 +309,17 @@ export const createGuest = async (req, res) => {
 
     let attendance = null;
     if (autoCheckIn) {
+      const isProxy = req.body.attendanceType === 'PROXY';
       attendance = await Attendance.create({
         eventId: parseInt(eventId, 10),
         guestId: guest.id,
         status: 'PRESENT',
+        attendanceType: isProxy ? 'PROXY' : 'SELF',
+        representativeLastName: isProxy && req.body.representativeLastName ? String(req.body.representativeLastName).trim() : null,
+        representativeFirstName: isProxy && req.body.representativeFirstName ? String(req.body.representativeFirstName).trim() : null,
+        representativeNIN: isProxy && req.body.representativeNIN ? String(req.body.representativeNIN).trim() : null,
+        representativePosition: isProxy && req.body.representativePosition ? String(req.body.representativePosition).trim() : null,
+        representativeNotes: isProxy && req.body.representativeNotes ? String(req.body.representativeNotes).trim() : null,
         checkedInAt: new Date(),
         checkedInBy: req.user.id,
         workstation: workstation || req.headers['x-workstation'] || 'Poste Accueil'

@@ -153,6 +153,12 @@ export const exportGuestsExcel = async (req, res) => {
       { header: 'Banque', key: 'bank', width: 18 },
       { header: 'Type Invité', key: 'guestType', width: 15 },
       { header: 'Statut Présence', key: 'presenceStatus', width: 16 },
+      { header: 'Type Émargement', key: 'attendanceType', width: 20 },
+      { header: 'Nom Mandataire / Représentant', key: 'representativeLastName', width: 25 },
+      { header: 'Prénom Mandataire', key: 'representativeFirstName', width: 20 },
+      { header: 'NIN Mandataire', key: 'representativeNIN', width: 22 },
+      { header: 'Poste / Fonction Mandataire', key: 'representativePosition', width: 25 },
+      { header: 'Observations / Autre', key: 'representativeNotes', width: 30 },
       { header: 'Heure Émargement', key: 'checkedInAt', width: 22 },
       { header: 'Agent Émargement', key: 'agentName', width: 22 },
       { header: 'Poste', key: 'workstation', width: 18 }
@@ -169,6 +175,9 @@ export const exportGuestsExcel = async (req, res) => {
 
     guests.forEach((g) => {
       const isPresent = !!g.attendance;
+      const att = g.attendance || {};
+      const isProxy = att.attendanceType === 'PROXY';
+
       worksheet.addRow({
         refId: g.refId,
         lastNameOrCompany: g.lastNameOrCompany,
@@ -184,9 +193,15 @@ export const exportGuestsExcel = async (req, res) => {
         bank: g.bank || '',
         guestType: g.guestType,
         presenceStatus: isPresent ? 'PRÉSENT' : 'ABSENT',
-        checkedInAt: isPresent && g.attendance.checkedInAt ? new Date(g.attendance.checkedInAt).toLocaleString('fr-FR') : '-',
-        agentName: isPresent && g.attendance.agent ? g.attendance.agent.fullName : '-',
-        workstation: isPresent && g.attendance.workstation ? g.attendance.workstation : '-'
+        attendanceType: isPresent ? (isProxy ? 'MANDATAIRE / REPRÉSENTANT' : 'TITULAIRE / DIRECT') : '-',
+        representativeLastName: isProxy ? (att.representativeLastName || '') : '-',
+        representativeFirstName: isProxy ? (att.representativeFirstName || '') : '-',
+        representativeNIN: isProxy ? (att.representativeNIN || '') : '-',
+        representativePosition: isProxy ? (att.representativePosition || '') : '-',
+        representativeNotes: isProxy ? (att.representativeNotes || '') : '-',
+        checkedInAt: isPresent && att.checkedInAt ? new Date(att.checkedInAt).toLocaleString('fr-FR') : '-',
+        agentName: isPresent && att.agent ? att.agent.fullName : '-',
+        workstation: isPresent && att.workstation ? att.workstation : '-'
       });
     });
 

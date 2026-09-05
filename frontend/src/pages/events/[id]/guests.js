@@ -40,6 +40,7 @@ import {
 import AppLayout from '../../../components/layout/AppLayout';
 import GuestDetailModal from '../../../components/guests/GuestDetailModal';
 import NewGuestModal from '../../../components/guests/NewGuestModal';
+import ProxyCheckInModal from '../../../components/guests/ProxyCheckInModal';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 
@@ -60,6 +61,7 @@ export default function GuestsPage() {
   const [selectedGuest, setSelectedGuest] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [newGuestOpen, setNewGuestOpen] = useState(false);
+  const [proxyModalOpen, setProxyModalOpen] = useState(false);
 
   const fetchGuests = async () => {
     if (!eventId) return;
@@ -102,15 +104,17 @@ export default function GuestsPage() {
     setDetailOpen(true);
   };
 
-  const handleCheckIn = async (guest) => {
+  const handleCheckIn = async (guest, proxyData = null) => {
     try {
       await api.post('/attendances/check-in', {
         eventId,
         guestId: guest.id,
-        workstation
+        workstation,
+        ...(proxyData || { attendanceType: 'SELF' })
       });
       fetchGuests();
       setDetailOpen(false);
+      setProxyModalOpen(false);
     } catch (err) {
       alert(err.response?.data?.error || 'Erreur lors de l\'émargement');
     }
@@ -365,8 +369,23 @@ export default function GuestsPage() {
         onClose={() => setDetailOpen(false)}
         guest={selectedGuest}
         onCheckIn={handleCheckIn}
+        onProxyCheckIn={(guest) => {
+          setSelectedGuest(guest);
+          setDetailOpen(false);
+          setProxyModalOpen(true);
+        }}
         onCancelCheckIn={handleCancelCheckIn}
         onPrintBadge={handlePrintBadge}
+      />
+
+      {/* Proxy / Representative Check-in Modal */}
+      <ProxyCheckInModal
+        open={proxyModalOpen}
+        onClose={() => setProxyModalOpen(false)}
+        guest={selectedGuest}
+        onSubmit={async (proxyData) => {
+          await handleCheckIn(selectedGuest, proxyData);
+        }}
       />
 
       {/* New Guest Modal */}

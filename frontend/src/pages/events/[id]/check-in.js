@@ -39,10 +39,14 @@ import {
   Sparkles,
   Command,
   CornerDownLeft,
-  X
+  X,
+  Users,
+  ShieldCheck,
+  Briefcase
 } from 'lucide-react';
 import AppLayout from '../../../components/layout/AppLayout';
 import NewGuestModal from '../../../components/guests/NewGuestModal';
+import ProxyCheckInModal from '../../../components/guests/ProxyCheckInModal';
 import { useAuth } from '../../../context/AuthContext';
 import { socket } from '../../../services/socket';
 import { playSuccessSound, playWarningSound, playPrintSound } from '../../../components/common/SoundEffects';
@@ -61,6 +65,7 @@ export default function CheckInPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [feedback, setFeedback] = useState(null); // { type: 'success'|'warning'|'error', message, details }
   const [newGuestOpen, setNewGuestOpen] = useState(false);
+  const [proxyModalOpen, setProxyModalOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const searchInputRef = useRef(null);
@@ -72,7 +77,7 @@ export default function CheckInPage() {
         .then((res) => {
           setSelectedEvent(res.data.event);
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [eventId]);
 
@@ -83,7 +88,7 @@ export default function CheckInPage() {
     }
   }, []);
 
-  // Global Keyboard Shortcuts (CTRL+K, P, I, ESC)
+  // Global Keyboard Shortcuts (CTRL+K, P, M, I, ESC)
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Focus Search: CTRL+K or F2
@@ -92,10 +97,16 @@ export default function CheckInPage() {
         searchInputRef.current?.focus();
       }
 
-      // Check-in shortcut: P (when not typing in an input field)
+      // Check-in Direct shortcut: P (when not typing in an input field)
       if ((e.key === 'p' || e.key === 'P') && document.activeElement !== searchInputRef.current && selectedGuest && !selectedGuest.attendance) {
         e.preventDefault();
         handleCheckIn(selectedGuest);
+      }
+
+      // Check-in Proxy shortcut: M (when not typing in an input field)
+      if ((e.key === 'm' || e.key === 'M') && document.activeElement !== searchInputRef.current && selectedGuest && !selectedGuest.attendance) {
+        e.preventDefault();
+        setProxyModalOpen(true);
       }
 
       // Print shortcut: I (when not typing in an input field)
@@ -109,6 +120,8 @@ export default function CheckInPage() {
         setSelectedGuest(null);
         setSearchQuery('');
         setSearchResults([]);
+        setProxyModalOpen(false);
+        setNewGuestOpen(false);
         searchInputRef.current?.focus();
       }
     };
@@ -165,17 +178,20 @@ export default function CheckInPage() {
   };
 
   // Perform Check-in
-  const handleCheckIn = async (guestToProcess) => {
+  const handleCheckIn = async (guestToProcess, proxyData = null) => {
     const guest = guestToProcess || selectedGuest;
     if (!guest || !eventId) return;
 
     setIsCheckingIn(true);
     try {
-      const res = await api.post('/attendances/check-in', {
+      const payload = {
         eventId,
         guestId: guest.id,
-        workstation
-      });
+        workstation,
+        ...(proxyData || { attendanceType: 'SELF' })
+      };
+
+      const res = await api.post('/attendances/check-in', payload);
 
       // Update state
       const updatedGuest = { ...guest, attendance: res.data.attendance };
@@ -190,9 +206,14 @@ export default function CheckInPage() {
         colors: ['#722083', '#10b981', '#fbbf24']
       });
 
+      const isProxy = proxyData && proxyData.attendanceType === 'PROXY';
+      const successMsg = isProxy
+        ? `Présence validée par Mandataire (${proxyData.representativeLastName} ${proxyData.representativeFirstName || ''}) pour ${guest.lastNameOrCompany} !`
+        : `Présence directe validée pour ${guest.lastNameOrCompany} ${guest.firstName || ''} !`;
+
       setFeedback({
         type: 'success',
-        message: `Présence validée pour ${guest.lastNameOrCompany} ${guest.firstName || ''} !`,
+        message: successMsg,
         details: `Enregistré à ${new Date().toLocaleTimeString('fr-FR')} sur ${workstation}`
       });
 
@@ -204,9 +225,13 @@ export default function CheckInPage() {
 
       if (err.response?.status === 409) {
         const data = err.response.data;
+        const dupType = data.attendanceType === 'PROXY' 
+          ? `(Par Mandataire : ${data.representativeLastName || ''} ${data.representativeFirstName || ''})` 
+          : '(En personne)';
+
         setFeedback({
           type: 'warning',
-          message: 'ATTENTION : Cet invité est DÉJÀ ÉMARGÉ !',
+          message: `ATTENTION : Cet invité est DÉJÀ ÉMARGÉ ${dupType} !`,
           details: `Enregistré à ${new Date(data.checkedInAt).toLocaleTimeString('fr-FR')} par ${data.checkedInBy} (${data.workstation})`
         });
         if (data.attendance) {
@@ -442,7 +467,11 @@ export default function CheckInPage() {
                                   <Typography variant="caption" sx={{ color: '#722083', fontWeight: 600 }}>
                                     {guest.refId}
                                   </Typography>
+                                  <Typography variant="caption" sx={{ color: '#722083', fontWeight: 600 }}>
+                                    {guest.numberOfShares}
+                                  </Typography>
                                   {guest.bank && (
+                                    
                                     <Typography variant="caption" sx={{ color: '#64748b' }}>
                                       • {guest.bank}
                                     </Typography>
@@ -534,9 +563,9 @@ export default function CheckInPage() {
                         sx={{ bgcolor: '#ffffff', color: '#722083', fontWeight: 800, border: '1px solid #cbd5e1' }}
                       />
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                       <Chip
-                        label={isPresent ? 'PRÉSENCE ENREGISTRÉE' : 'NON ÉMARGÉ'}
+                        label={isPresent ? (selectedGuest.attendance.attendanceType === 'PROXY' ? 'PRÉSENT PAR MANDATAIRE' : 'PRÉSENT EN PERSONNE') : 'NON ÉMARGÉ'}
                         size="small"
                         color={isPresent ? 'success' : 'default'}
                         sx={{ fontWeight: 700 }}
@@ -547,7 +576,7 @@ export default function CheckInPage() {
                 </Box>
 
                 {/* Big Action Buttons */}
-                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
                   <Button
                     variant="outlined"
                     onClick={() => handlePrintBadge(selectedGuest)}
@@ -565,27 +594,49 @@ export default function CheckInPage() {
                   </Button>
 
                   {!isPresent ? (
-                    <Button
-                      variant="contained"
-                      size="large"
-                      onClick={() => handleCheckIn(selectedGuest)}
-                      disabled={isCheckingIn}
-                      startIcon={<UserCheck size={20} />}
-                      sx={{
-                        bgcolor: '#10b981',
-                        fontWeight: 800,
-                        py: 1.2,
-                        px: 3,
-                        fontSize: '0.95rem',
-                        '&:hover': { bgcolor: '#059669' }
-                      }}
-                    >
-                      Valider Présence (P)
-                    </Button>
+                    <>
+                      {/* Button 1: Direct / In-Person Check-in */}
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={() => handleCheckIn(selectedGuest)}
+                        disabled={isCheckingIn}
+                        startIcon={<UserCheck size={19} />}
+                        sx={{
+                          bgcolor: '#10b981',
+                          fontWeight: 800,
+                          py: 1.2,
+                          px: 2.5,
+                          fontSize: '0.92rem',
+                          '&:hover': { bgcolor: '#059669' }
+                        }}
+                      >
+                        Valider Présence Directe (P)
+                      </Button>
+
+                      {/* Button 2: Proxy / Representative Check-in */}
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={() => setProxyModalOpen(true)}
+                        disabled={isCheckingIn}
+                        startIcon={<Users size={19} />}
+                        sx={{
+                          bgcolor: '#722083',
+                          fontWeight: 800,
+                          py: 1.2,
+                          px: 2.5,
+                          fontSize: '0.92rem',
+                          '&:hover': { bgcolor: '#5a1967' }
+                        }}
+                      >
+                        Valider par Mandataire (M)
+                      </Button>
+                    </>
                   ) : (
                     <Chip
                       icon={<CheckCircle size={16} />}
-                      label="Émargé"
+                      label={selectedGuest.attendance.attendanceType === 'PROXY' ? 'Émargé par Mandataire' : 'Émargé en Personne'}
                       color="success"
                       sx={{ height: 36, px: 1, fontWeight: 800, fontSize: '0.85rem' }}
                     />
@@ -593,13 +644,21 @@ export default function CheckInPage() {
                 </Box>
               </Box>
 
-              {/* Already Checked-in Warning Banner */}
+              {/* Already Checked-in Warning / Info Banner */}
               {isPresent && (
-                <Box sx={{ p: 2, bgcolor: '#f0fdf4', borderBottom: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ p: 2, bgcolor: '#f0fdf4', borderBottom: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <CheckCircle size={20} color="#166534" />
                     <Typography variant="body2" sx={{ color: '#166534', fontWeight: 600 }}>
-                      Présent depuis {new Date(selectedGuest.attendance.checkedInAt).toLocaleTimeString('fr-FR')} • {selectedGuest.attendance.workstation || 'Guichet'}
+                      {selectedGuest.attendance.attendanceType === 'PROXY' ? (
+                        <>
+                          Présent par Mandataire : <strong>{selectedGuest.attendance.representativeLastName} {selectedGuest.attendance.representativeFirstName || ''}</strong> ({selectedGuest.attendance.representativePosition || 'Mandataire'}) • Enregistré à {new Date(selectedGuest.attendance.checkedInAt).toLocaleTimeString('fr-FR')} • {selectedGuest.attendance.workstation || 'Guichet'}
+                        </>
+                      ) : (
+                        <>
+                          Présent en personne (Titulaire / PDG) • Enregistré à {new Date(selectedGuest.attendance.checkedInAt).toLocaleTimeString('fr-FR')} • {selectedGuest.attendance.workstation || 'Guichet'}
+                        </>
+                      )}
                     </Typography>
                   </Box>
                 </Box>
@@ -607,6 +666,44 @@ export default function CheckInPage() {
 
               {/* Full Identity Verification Grid */}
               <CardContent sx={{ p: 3 }}>
+                {/* Proxy / Representative Details Section (If Checked in by Proxy) */}
+                {isPresent && selectedGuest.attendance.attendanceType === 'PROXY' && (
+                  <Box sx={{ mb: 3, p: 2.5, bgcolor: '#fdf4ff', borderRadius: 2.5, border: '1px solid #f0abfc' }}>
+                    <Typography variant="subtitle2" sx={{ color: '#722083', fontWeight: 800, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <ShieldCheck size={18} color="#722083" />
+                      Détails du Mandataire / Représentant Présent :
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="caption" sx={{ color: '#86198f', display: 'block' }}>Nom & Prénom Mandataire</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 800, color: '#701a75' }}>
+                          {selectedGuest.attendance.representativeLastName} {selectedGuest.attendance.representativeFirstName || ''}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="caption" sx={{ color: '#86198f', display: 'block' }}>Qualité / Fonction</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#701a75' }}>
+                          {selectedGuest.attendance.representativePosition || 'Mandataire'}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="caption" sx={{ color: '#86198f', display: 'block' }}>NIN Mandataire</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#701a75' }}>
+                          {selectedGuest.attendance.representativeNIN || 'Non renseigné'}
+                        </Typography>
+                      </Grid>
+                      {selectedGuest.attendance.representativeNotes && (
+                        <Grid item xs={12}>
+                          <Typography variant="caption" sx={{ color: '#86198f', display: 'block' }}>Observations / Autre</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#701a75' }}>
+                            {selectedGuest.attendance.representativeNotes}
+                          </Typography>
+                        </Grid>
+                      )}
+                    </Grid>
+                  </Box>
+                )}
+
                 <Typography variant="caption" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, mb: 2, display: 'block' }}>
                   Vérification des informations de l'invité
                 </Typography>
@@ -685,6 +782,18 @@ export default function CheckInPage() {
         open={newGuestOpen}
         onClose={() => setNewGuestOpen(false)}
         onSubmit={handleCreateWalkIn}
+      />
+
+      {/* Proxy / Representative Check-in Modal */}
+      <ProxyCheckInModal
+        open={proxyModalOpen}
+        onClose={() => setProxyModalOpen(false)}
+        guest={selectedGuest}
+        onSubmit={(proxyData) => {
+          setProxyModalOpen(false);
+          handleCheckIn(selectedGuest, proxyData);
+        }}
+        isSubmitting={isCheckingIn}
       />
     </AppLayout>
   );

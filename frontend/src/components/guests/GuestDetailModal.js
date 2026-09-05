@@ -23,7 +23,8 @@ import {
   FileText,
   Calendar,
   Layers,
-  Award
+  Award,
+  Users
 } from 'lucide-react';
 
 export default function GuestDetailModal({
@@ -31,6 +32,7 @@ export default function GuestDetailModal({
   onClose,
   guest,
   onCheckIn,
+  onProxyCheckIn,
   onCancelCheckIn,
   onPrintBadge,
   isCheckingIn = false,
@@ -117,31 +119,81 @@ export default function GuestDetailModal({
       <DialogContent sx={{ p: 3 }}>
         {/* Presence Details if Present */}
         {isPresent && (
-          <Box sx={{ mb: 3, p: 2, bgcolor: '#f0fdf4', borderRadius: 2, border: '1px solid #bbf7d0' }}>
-            <Typography variant="subtitle2" sx={{ color: '#166534', fontWeight: 700, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <UserCheck size={18} color="#166534" />
-              Détails de l'émargement enregistré
-            </Typography>
+          <Box sx={{ mb: 3, p: 2.5, bgcolor: '#f0fdf4', borderRadius: 2.5, border: '1px solid #bbf7d0' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+              <Typography variant="subtitle2" sx={{ color: '#166534', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <UserCheck size={18} color="#166534" />
+                Détails de l'émargement enregistré
+              </Typography>
+              <Chip
+                label={guest.attendance.attendanceType === 'PROXY' ? 'MANDATAIRE / REPRÉSENTANT' : 'PRÉSENCE EN PERSONNE / TITULAIRE'}
+                size="small"
+                sx={{
+                  bgcolor: guest.attendance.attendanceType === 'PROXY' ? 'rgba(114, 32, 131, 0.12)' : 'rgba(16, 185, 129, 0.15)',
+                  color: guest.attendance.attendanceType === 'PROXY' ? '#722083' : '#15803d',
+                  fontWeight: 800,
+                  fontSize: '0.72rem'
+                }}
+              />
+            </Box>
+
             <Grid container spacing={2}>
               <Grid item xs={12} sm={4}>
                 <Typography variant="caption" sx={{ color: '#15803d', display: 'block' }}>Heure d'arrivée</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#14532d' }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#14532d' }}>
                   {new Date(guest.attendance.checkedInAt).toLocaleString('fr-FR')}
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={4}>
                 <Typography variant="caption" sx={{ color: '#15803d', display: 'block' }}>Agent d'accueil</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#14532d' }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#14532d' }}>
                   {guest.attendance.agent?.fullName || 'Agent'}
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={4}>
                 <Typography variant="caption" sx={{ color: '#15803d', display: 'block' }}>Guichet / Poste</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#14532d' }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#14532d' }}>
                   {guest.attendance.workstation || 'Poste Standard'}
                 </Typography>
               </Grid>
             </Grid>
+
+            {/* If Checked in by Proxy */}
+            {guest.attendance.attendanceType === 'PROXY' && (
+              <Box sx={{ mt: 2, pt: 2, borderTop: '1px dashed #86efac' }}>
+                <Typography variant="caption" sx={{ color: '#166534', fontWeight: 800, textTransform: 'uppercase', display: 'block', mb: 1 }}>
+                  Informations du Mandataire / Représentant :
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={4}>
+                    <Typography variant="caption" sx={{ color: '#15803d', display: 'block' }}>Nom & Prénom</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 800, color: '#14532d' }}>
+                      {guest.attendance.representativeLastName} {guest.attendance.representativeFirstName || ''}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Typography variant="caption" sx={{ color: '#15803d', display: 'block' }}>Qualité / Poste</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#14532d' }}>
+                      {guest.attendance.representativePosition || 'Mandataire'}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Typography variant="caption" sx={{ color: '#15803d', display: 'block' }}>NIN Mandataire</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#14532d' }}>
+                      {guest.attendance.representativeNIN || '-'}
+                    </Typography>
+                  </Grid>
+                  {guest.attendance.representativeNotes && (
+                    <Grid item xs={12}>
+                      <Typography variant="caption" sx={{ color: '#15803d', display: 'block' }}>Observations</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#14532d' }}>
+                        {guest.attendance.representativeNotes}
+                      </Typography>
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
+            )}
           </Box>
         )}
 
@@ -299,7 +351,7 @@ export default function GuestDetailModal({
           )}
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
           <Button
             variant="outlined"
             onClick={() => onPrintBadge(guest)}
@@ -311,15 +363,29 @@ export default function GuestDetailModal({
           </Button>
 
           {!isPresent && (
-            <Button
-              variant="contained"
-              onClick={() => onCheckIn(guest)}
-              disabled={isCheckingIn}
-              startIcon={<UserCheck size={18} />}
-              sx={{ px: 3 }}
-            >
-              Valider Présence
-            </Button>
+            <>
+              <Button
+                variant="contained"
+                onClick={() => onCheckIn(guest)}
+                disabled={isCheckingIn}
+                startIcon={<UserCheck size={18} />}
+                sx={{ bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' }, px: 2.5 }}
+              >
+                Valider Directe
+              </Button>
+
+              {onProxyCheckIn && (
+                <Button
+                  variant="contained"
+                  onClick={() => onProxyCheckIn(guest)}
+                  disabled={isCheckingIn}
+                  startIcon={<Users size={18} />}
+                  sx={{ bgcolor: '#722083', '&:hover': { bgcolor: '#5a1967' }, px: 2.5 }}
+                >
+                  Valider par Mandataire
+                </Button>
+              )}
+            </>
           )}
         </Box>
       </DialogActions>

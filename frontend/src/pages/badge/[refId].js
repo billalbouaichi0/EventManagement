@@ -56,7 +56,7 @@ export default function BadgePrintPage() {
       });
 
       const imgData = canvas.toDataURL('image/png');
-      
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -64,7 +64,7 @@ export default function BadgePrintPage() {
       });
 
       pdf.addImage(imgData, 'PNG', 0, 0, 65, 102, undefined, 'FAST');
-      
+
       const fileName = `Badge_${guest.lastNameOrCompany || 'Invite'}.pdf`.replace(/[^a-zA-Z0-9_\.-]/g, '_');
       pdf.save(fileName);
     } catch (err) {
@@ -299,7 +299,7 @@ export default function BadgePrintPage() {
             {/* 1. EN HAUT AU CENTRE : LOGO BDL */}
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', pt: '2mm', width: '100%' }}>
               <img
-                src="/logo-acronyme.png"
+                src="/LogoBadge.png"
                 alt="Logo BDL"
                 crossOrigin="anonymous"
                 style={{
@@ -308,7 +308,7 @@ export default function BadgePrintPage() {
                   objectFit: 'contain'
                 }}
                 onError={(e) => {
-                  e.target.src = '/LOGO-ACRONYME-.png';
+                  e.target.src = '/LogoBadge.png';
                 }}
               />
             </Box>

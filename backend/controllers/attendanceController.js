@@ -2,7 +2,17 @@ import { Attendance, Guest, Event, User, sequelize } from '../models/index.js';
 import { logAudit } from '../middleware/audit.js';
 
 export const recordAttendance = async (req, res) => {
-  const { eventId, guestId, workstation } = req.body;
+  const {
+    eventId,
+    guestId,
+    workstation,
+    attendanceType = 'SELF',
+    representativeLastName,
+    representativeFirstName,
+    representativeNIN,
+    representativePosition,
+    representativeNotes
+  } = req.body;
 
   if (!eventId || !guestId) {
     return res.status(400).json({ error: 'eventId et guestId sont obligatoires.' });
@@ -31,7 +41,12 @@ export const recordAttendance = async (req, res) => {
         attendance: existing,
         checkedInAt: existing.checkedInAt,
         checkedInBy: existing.agent ? existing.agent.fullName : 'Agent',
-        workstation: existing.workstation
+        workstation: existing.workstation,
+        attendanceType: existing.attendanceType,
+        representativeLastName: existing.representativeLastName,
+        representativeFirstName: existing.representativeFirstName,
+        representativeNIN: existing.representativeNIN,
+        representativePosition: existing.representativePosition
       });
     }
 
@@ -46,11 +61,23 @@ export const recordAttendance = async (req, res) => {
     }
 
     const ws = workstation || req.headers['x-workstation'] || 'Poste Accueil';
+    const isProxy = attendanceType === 'PROXY';
+    const repLastName = isProxy ? (representativeLastName ? String(representativeLastName).trim() : '') : null;
+    const repFirstName = isProxy ? (representativeFirstName ? String(representativeFirstName).trim() : '') : null;
+    const repNIN = isProxy ? (representativeNIN ? String(representativeNIN).trim() : '') : null;
+    const repPosition = isProxy ? (representativePosition ? String(representativePosition).trim() : '') : null;
+    const repNotes = isProxy ? (representativeNotes ? String(representativeNotes).trim() : '') : null;
 
     const attendance = await Attendance.create({
       eventId,
       guestId,
       status: 'PRESENT',
+      attendanceType: isProxy ? 'PROXY' : 'SELF',
+      representativeLastName: repLastName,
+      representativeFirstName: repFirstName,
+      representativeNIN: repNIN,
+      representativePosition: repPosition,
+      representativeNotes: repNotes,
       checkedInAt: new Date(),
       checkedInBy: req.user.id,
       workstation: ws
@@ -58,12 +85,16 @@ export const recordAttendance = async (req, res) => {
 
     await t.commit();
 
+    const auditDetails = isProxy
+      ? `Émargement par Mandataire/Représentant (${repLastName} ${repFirstName || ''} - ${repPosition || 'Mandataire'}) pour ${guest.lastNameOrCompany} ${guest.firstName || ''} (${guest.refId})`
+      : `Émargement direct de ${guest.lastNameOrCompany} ${guest.firstName || ''} (${guest.refId})`;
+
     await logAudit({
       userId: req.user.id,
       action: 'CHECK_IN',
       resource: 'GUEST',
       resourceId: guest.id,
-      details: `Émargement de ${guest.lastNameOrCompany} ${guest.firstName || ''} (${guest.refId})`,
+      details: auditDetails,
       workstation: ws,
       req
     });

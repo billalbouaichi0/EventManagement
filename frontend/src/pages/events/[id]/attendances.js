@@ -144,6 +144,7 @@ export default function AttendancesPage() {
                 <TableCell>Heure Émargement</TableCell>
                 <TableCell>Réf Invité</TableCell>
                 <TableCell>Nom / Raison Sociale</TableCell>
+                <TableCell>Type / Émargé Par</TableCell>
                 <TableCell>Actions</TableCell>
                 <TableCell>Agent d'accueil</TableCell>
                 <TableCell>Guichet / Poste</TableCell>
@@ -153,76 +154,135 @@ export default function AttendancesPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
                     <CircularProgress sx={{ color: '#722083' }} />
                   </TableCell>
                 </TableRow>
               ) : attendances.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 6, color: '#94a3b8' }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 6, color: '#94a3b8' }}>
                     Aucune présence enregistrée pour cet événement.
                   </TableCell>
                 </TableRow>
               ) : (
-                attendances.map((att) => (
-                  <TableRow key={att.id} hover>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Clock size={15} color="#722083" />
+                attendances.map((att) => {
+                  const isProxy = att.attendanceType === 'PROXY';
+
+                  return (
+                    <TableRow key={att.id} hover>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Clock size={15} color="#722083" />
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                            {new Date(att.checkedInAt).toLocaleTimeString('fr-FR')}
+                          </Typography>
+                        </Box>
+                        <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                          {new Date(att.checkedInAt).toLocaleDateString('fr-FR')}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={att.guest?.refId || `INV-${att.guestId}`}
+                          size="small"
+                          sx={{ fontWeight: 700, bgcolor: '#f8fafc', color: '#722083', border: '1px solid #e2e8f0' }}
+                        />
+                      </TableCell>
+                      <TableCell>
                         <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
-                          {new Date(att.checkedInAt).toLocaleTimeString('fr-FR')}
+                          {att.guest?.lastNameOrCompany} {att.guest?.firstName || ''}
                         </Typography>
-                      </Box>
-                      <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                        {new Date(att.checkedInAt).toLocaleDateString('fr-FR')}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={att.guest?.refId || `INV-${att.guestId}`}
-                        size="small"
-                        sx={{ fontWeight: 700, bgcolor: '#f8fafc', color: '#722083', border: '1px solid #e2e8f0' }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
-                        {att.guest?.lastNameOrCompany} {att.guest?.firstName || ''}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#64748b' }}>
-                        {att.guest?.bank || att.guest?.wilaya || '-'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>
-                        {att.guest?.numberOfShares?.toLocaleString('fr-FR') || '0'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Avatar sx={{ width: 24, height: 24, bgcolor: '#722083', fontSize: '0.7rem', fontWeight: 700 }}>
-                          {att.agent?.fullName?.charAt(0) || 'A'}
-                        </Avatar>
-                        <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                          {att.agent?.fullName || 'Agent'}
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>
+                          {att.guest?.bank || att.guest?.wilaya || '-'}
                         </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={att.workstation || 'Poste Standard'}
-                        size="small"
-                        sx={{ bgcolor: '#f1f5f9', fontWeight: 600, fontSize: '0.75rem' }}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Annuler cet émargement">
-                        <IconButton size="small" color="error" onClick={() => handleCancel(att)}>
-                          <XCircle size={18} />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                      <TableCell>
+                        {isProxy ? (
+                          <Tooltip
+                            title={
+                              <Box sx={{ p: 0.5 }}>
+                                <Typography variant="caption" sx={{ display: 'block', fontWeight: 700 }}>
+                                  Mandataire: {att.representativeLastName} {att.representativeFirstName || ''}
+                                </Typography>
+                                <Typography variant="caption" sx={{ display: 'block' }}>
+                                  Poste: {att.representativePosition || 'Non précisé'}
+                                </Typography>
+                                <Typography variant="caption" sx={{ display: 'block' }}>
+                                  NIN: {att.representativeNIN || 'Non renseigné'}
+                                </Typography>
+                                {att.representativeNotes && (
+                                  <Typography variant="caption" sx={{ display: 'block', fontStyle: 'italic', mt: 0.5 }}>
+                                    Notes: {att.representativeNotes}
+                                  </Typography>
+                                )}
+                              </Box>
+                            }
+                            arrow
+                          >
+                            <Box>
+                              <Chip
+                                label={`Mandataire: ${att.representativeLastName || 'Représentant'}`}
+                                size="small"
+                                sx={{
+                                  bgcolor: 'rgba(114, 32, 131, 0.12)',
+                                  color: '#722083',
+                                  fontWeight: 700,
+                                  fontSize: '0.72rem',
+                                  cursor: 'pointer'
+                                }}
+                              />
+                              {att.representativePosition && (
+                                <Typography variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: '0.7rem', mt: 0.2 }}>
+                                  {att.representativePosition}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Tooltip>
+                        ) : (
+                          <Chip
+                            label="En Personne"
+                            size="small"
+                            sx={{
+                              bgcolor: 'rgba(16, 185, 129, 0.12)',
+                              color: '#059669',
+                              fontWeight: 700,
+                              fontSize: '0.72rem'
+                            }}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>
+                          {att.guest?.numberOfShares?.toLocaleString('fr-FR') || '0'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Avatar sx={{ width: 24, height: 24, bgcolor: '#722083', fontSize: '0.7rem', fontWeight: 700 }}>
+                            {att.agent?.fullName?.charAt(0) || 'A'}
+                          </Avatar>
+                          <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                            {att.agent?.fullName || 'Agent'}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={att.workstation || 'Poste Standard'}
+                          size="small"
+                          sx={{ bgcolor: '#f1f5f9', fontWeight: 600, fontSize: '0.75rem' }}
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Tooltip title="Annuler cet émargement">
+                          <IconButton size="small" color="error" onClick={() => handleCancel(att)}>
+                            <XCircle size={18} />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
