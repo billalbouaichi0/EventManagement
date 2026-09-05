@@ -91,28 +91,50 @@ export default function CheckInPage() {
   // Global Keyboard Shortcuts (CTRL+K, P, M, I, ESC)
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Focus Search: CTRL+K or F2
-      if ((e.ctrlKey && e.key === 'k') || e.key === 'F2') {
+      // Check if user is actively typing inside ANY input, textarea or contenteditable element
+      const activeEl = document.activeElement;
+      const isInputActive =
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.tagName === 'SELECT' ||
+          activeEl.isContentEditable);
+
+      // Focus Search: CTRL+K (always) or F2 (when not typing in other inputs)
+      if ((e.ctrlKey && (e.key === 'k' || e.key === 'K')) || (!isInputActive && e.key === 'F2')) {
         e.preventDefault();
         searchInputRef.current?.focus();
+        return;
       }
 
-      // Check-in Direct shortcut: P (when not typing in an input field)
-      if ((e.key === 'p' || e.key === 'P') && document.activeElement !== searchInputRef.current && selectedGuest && !selectedGuest.attendance) {
+      // If a modal is open or user is typing in ANY form input, do NOT trigger single-key action shortcuts (P, M, I, etc.)
+      if (proxyModalOpen || newGuestOpen || isInputActive) {
+        if (e.key === 'Escape') {
+          if (proxyModalOpen) setProxyModalOpen(false);
+          if (newGuestOpen) setNewGuestOpen(false);
+        }
+        return;
+      }
+
+      // Check-in Direct shortcut: P (only when on main page, not typing in inputs)
+      if ((e.key === 'p' || e.key === 'P') && selectedGuest && !selectedGuest.attendance) {
         e.preventDefault();
         handleCheckIn(selectedGuest);
+        return;
       }
 
-      // Check-in Proxy shortcut: M (when not typing in an input field)
-      if ((e.key === 'm' || e.key === 'M') && document.activeElement !== searchInputRef.current && selectedGuest && !selectedGuest.attendance) {
+      // Check-in Proxy shortcut: M (only when on main page, not typing in inputs)
+      if ((e.key === 'm' || e.key === 'M') && selectedGuest && !selectedGuest.attendance) {
         e.preventDefault();
         setProxyModalOpen(true);
+        return;
       }
 
-      // Print shortcut: I (when not typing in an input field)
-      if ((e.key === 'i' || e.key === 'I') && document.activeElement !== searchInputRef.current && selectedGuest) {
+      // Print shortcut: I (only when on main page, not typing in inputs)
+      if ((e.key === 'i' || e.key === 'I') && selectedGuest) {
         e.preventDefault();
         handlePrintBadge(selectedGuest);
+        return;
       }
 
       // Clear / Reset: ESC
@@ -120,15 +142,13 @@ export default function CheckInPage() {
         setSelectedGuest(null);
         setSearchQuery('');
         setSearchResults([]);
-        setProxyModalOpen(false);
-        setNewGuestOpen(false);
         searchInputRef.current?.focus();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedGuest]);
+  }, [selectedGuest, proxyModalOpen, newGuestOpen]);
 
   // Instant Search Query Execution
   useEffect(() => {
