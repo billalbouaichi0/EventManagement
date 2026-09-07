@@ -683,8 +683,18 @@ async function executeQueriesAndGenerateReport() {
 
   const outputPath = path.resolve('..', 'Rapport_Resultats_Statistiques_ElMoultaka.docx');
   const buffer = await Packer.toBuffer(doc);
-  fs.writeFileSync(outputPath, buffer);
-  console.log(`Document Word des résultats réels généré avec succès : ${outputPath}`);
+  try {
+    fs.writeFileSync(outputPath, buffer);
+    console.log(`Document Word des résultats réels généré avec succès : ${outputPath}`);
+  } catch (fsErr) {
+    if (fsErr.code === 'EBUSY') {
+      const altPath = path.resolve('..', 'Rapport_Resultats_Statistiques_ElMoultaka_Maj.docx');
+      fs.writeFileSync(altPath, buffer);
+      console.log(`Note: Le fichier principal était ouvert dans Word. Le rapport mis à jour a été enregistré sous : ${altPath}`);
+    } else {
+      throw fsErr;
+    }
+  }
   process.exit(0);
 }
 
