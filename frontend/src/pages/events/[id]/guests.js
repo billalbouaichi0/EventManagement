@@ -32,14 +32,15 @@ import {
   UserCheck,
   Printer,
   Download,
-  Filter,
   Eye,
   Plus,
-  ArrowUpDown
+  ArrowUpDown,
+  Edit
 } from 'lucide-react';
 import AppLayout from '../../../components/layout/AppLayout';
 import GuestDetailModal from '../../../components/guests/GuestDetailModal';
 import NewGuestModal from '../../../components/guests/NewGuestModal';
+import EditGuestModal from '../../../components/guests/EditGuestModal';
 import ProxyCheckInModal from '../../../components/guests/ProxyCheckInModal';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
@@ -61,6 +62,7 @@ export default function GuestsPage() {
   const [selectedGuest, setSelectedGuest] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [newGuestOpen, setNewGuestOpen] = useState(false);
+  const [editGuestOpen, setEditGuestOpen] = useState(false);
   const [proxyModalOpen, setProxyModalOpen] = useState(false);
 
   const fetchGuests = async () => {
@@ -332,6 +334,16 @@ export default function GuestsPage() {
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              setSelectedGuest(g);
+                              setEditGuestOpen(true);
+                            }}
+                            title="Modifier les informations (NIN, RC, NIF...)"
+                          >
+                            <Edit size={18} color="#0284c7" />
+                          </IconButton>
                           <IconButton size="small" onClick={() => handleOpenDetail(g)} title="Voir la fiche">
                             <Eye size={18} color="#722083" />
                           </IconButton>
@@ -374,8 +386,24 @@ export default function GuestsPage() {
           setDetailOpen(false);
           setProxyModalOpen(true);
         }}
+        onEdit={(guest) => {
+          setSelectedGuest(guest);
+          setDetailOpen(false);
+          setEditGuestOpen(true);
+        }}
         onCancelCheckIn={handleCancelCheckIn}
         onPrintBadge={handlePrintBadge}
+      />
+
+      {/* Edit Guest Modal */}
+      <EditGuestModal
+        open={editGuestOpen}
+        onClose={() => setEditGuestOpen(false)}
+        guest={selectedGuest}
+        onSaved={(updatedGuest) => {
+          setSelectedGuest(updatedGuest);
+          fetchGuests();
+        }}
       />
 
       {/* Proxy / Representative Check-in Modal */}

@@ -24,7 +24,8 @@ import {
   Calendar,
   Layers,
   Award,
-  Users
+  Users,
+  Edit
 } from 'lucide-react';
 
 export default function GuestDetailModal({
@@ -35,6 +36,7 @@ export default function GuestDetailModal({
   onProxyCheckIn,
   onCancelCheckIn,
   onPrintBadge,
+  onEdit,
   isCheckingIn = false,
   isPrinting = false
 }) {
@@ -111,9 +113,28 @@ export default function GuestDetailModal({
           </Box>
         </Box>
 
-        <IconButton onClick={onClose} size="small" sx={{ color: '#64748b' }}>
-          <X size={20} />
-        </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {onEdit && (
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<Edit size={15} />}
+              onClick={() => onEdit(guest)}
+              sx={{
+                borderColor: '#722083',
+                color: '#722083',
+                fontWeight: 700,
+                textTransform: 'none',
+                bgcolor: '#ffffff'
+              }}
+            >
+              Modifier (NIN, RC, NIF...)
+            </Button>
+          )}
+          <IconButton onClick={onClose} size="small" sx={{ color: '#64748b' }}>
+            <X size={20} />
+          </IconButton>
+        </Box>
       </Box>
 
       <DialogContent sx={{ p: 3 }}>

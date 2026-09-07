@@ -35,7 +35,13 @@ export default function NewGuestModal({ open, onClose, onSubmit, isSubmitting = 
     address: '',
     birthDate: '',
     autoCheckIn: true,
-    autoPrintBadge: true
+    autoPrintBadge: true,
+    isProxy: false,
+    representativeLastName: '',
+    representativeFirstName: '',
+    representativeNIN: '',
+    representativePosition: '',
+    representativeNotes: ''
   });
 
   const [error, setError] = useState('');
@@ -51,8 +57,17 @@ export default function NewGuestModal({ open, onClose, onSubmit, isSubmitting = 
       setError('Le Nom ou la Raison sociale est obligatoire.');
       return;
     }
+    if (formData.isProxy && !formData.representativeLastName.trim()) {
+      setError('Le Nom du mandataire / représentant est obligatoire.');
+      return;
+    }
     setError('');
-    onSubmit(formData);
+
+    const payload = {
+      ...formData,
+      attendanceType: formData.isProxy ? 'PROXY' : 'SELF'
+    };
+    onSubmit(payload);
   };
 
   return (
@@ -72,7 +87,7 @@ export default function NewGuestModal({ open, onClose, onSubmit, isSubmitting = 
             Ajouter un Invité Non Répertorié
           </Typography>
           <Typography variant="caption" sx={{ color: '#64748b' }}>
-            Enregistrement express sur place avec émargement immédiat
+            Enregistrement express sur place avec émargement direct ou par mandataire
           </Typography>
         </Box>
       </DialogTitle>
@@ -205,6 +220,91 @@ export default function NewGuestModal({ open, onClose, onSubmit, isSubmitting = 
           </Grid>
 
           <Divider sx={{ my: 2.5 }} />
+
+          {/* Proxy / Representative Section */}
+          <Box sx={{ mb: 2.5, p: 2, bgcolor: formData.isProxy ? '#fdf4ff' : '#f8fafc', borderRadius: 2.5, border: formData.isProxy ? '1px solid #f0abfc' : '1px solid #e2e8f0' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formData.isProxy}
+                  onChange={handleChange('isProxy')}
+                  sx={{ color: '#722083', '&.Mui-checked': { color: '#722083' } }}
+                />
+              }
+              label={
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#722083' }}>
+                  Présent par Mandataire / Représentant (personne morale ou titulaire représenté)
+                </Typography>
+              }
+            />
+
+            {formData.isProxy && (
+              <Box sx={{ mt: 2 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Nom du Mandataire / Représentant *"
+                      required={formData.isProxy}
+                      fullWidth
+                      size="small"
+                      value={formData.representativeLastName}
+                      onChange={handleChange('representativeLastName')}
+                      placeholder="Nom du représentant"
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#ffffff' } }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Prénom du Mandataire"
+                      fullWidth
+                      size="small"
+                      value={formData.representativeFirstName}
+                      onChange={handleChange('representativeFirstName')}
+                      placeholder="Prénom du représentant"
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#ffffff' } }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="NIN du Mandataire"
+                      fullWidth
+                      size="small"
+                      value={formData.representativeNIN}
+                      onChange={handleChange('representativeNIN')}
+                      placeholder="Numéro de pièce d'identité"
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#ffffff' } }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Poste / Fonction / Qualité"
+                      fullWidth
+                      size="small"
+                      value={formData.representativePosition}
+                      onChange={handleChange('representativePosition')}
+                      placeholder="ex: PDG, DG, Avocat, DAF..."
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#ffffff' } }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Observations / Autre"
+                      fullWidth
+                      size="small"
+                      value={formData.representativeNotes}
+                      onChange={handleChange('representativeNotes')}
+                      placeholder="ex: Procuration notariée..."
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#ffffff' } }}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+          </Box>
 
           {/* Quick Actions Checkboxes */}
           <Box sx={{ bgcolor: '#f8fafc', p: 2, borderRadius: 2, border: '1px solid #e2e8f0' }}>

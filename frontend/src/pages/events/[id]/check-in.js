@@ -41,11 +41,12 @@ import {
   CornerDownLeft,
   X,
   Users,
-  ShieldCheck,
-  Briefcase
+  Briefcase,
+  Edit
 } from 'lucide-react';
 import AppLayout from '../../../components/layout/AppLayout';
 import NewGuestModal from '../../../components/guests/NewGuestModal';
+import EditGuestModal from '../../../components/guests/EditGuestModal';
 import ProxyCheckInModal from '../../../components/guests/ProxyCheckInModal';
 import { useAuth } from '../../../context/AuthContext';
 import { socket } from '../../../services/socket';
@@ -65,6 +66,7 @@ export default function CheckInPage() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [feedback, setFeedback] = useState(null); // { type: 'success'|'warning'|'error', message, details }
   const [newGuestOpen, setNewGuestOpen] = useState(false);
+  const [editGuestOpen, setEditGuestOpen] = useState(false);
   const [proxyModalOpen, setProxyModalOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -108,10 +110,11 @@ export default function CheckInPage() {
       }
 
       // If a modal is open or user is typing in ANY form input, do NOT trigger single-key action shortcuts (P, M, I, etc.)
-      if (proxyModalOpen || newGuestOpen || isInputActive) {
+      if (proxyModalOpen || newGuestOpen || editGuestOpen || isInputActive) {
         if (e.key === 'Escape') {
           if (proxyModalOpen) setProxyModalOpen(false);
           if (newGuestOpen) setNewGuestOpen(false);
+          if (editGuestOpen) setEditGuestOpen(false);
         }
         return;
       }
@@ -148,7 +151,7 @@ export default function CheckInPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedGuest, proxyModalOpen, newGuestOpen]);
+  }, [selectedGuest, proxyModalOpen, newGuestOpen, editGuestOpen]);
 
   // Instant Search Query Execution
   useEffect(() => {
@@ -245,8 +248,8 @@ export default function CheckInPage() {
 
       if (err.response?.status === 409) {
         const data = err.response.data;
-        const dupType = data.attendanceType === 'PROXY' 
-          ? `(Par Mandataire : ${data.representativeLastName || ''} ${data.representativeFirstName || ''})` 
+        const dupType = data.attendanceType === 'PROXY'
+          ? `(Par Mandataire : ${data.representativeLastName || ''} ${data.representativeFirstName || ''})`
           : '(En personne)';
 
         setFeedback({
@@ -487,11 +490,17 @@ export default function CheckInPage() {
                                   <Typography variant="caption" sx={{ color: '#722083', fontWeight: 600 }}>
                                     {guest.refId}
                                   </Typography>
-                                  <Typography variant="caption" sx={{ color: '#722083', fontWeight: 600 }}>
+                                  <Typography
+                                    sx={{
+                                      color: '#722083',
+                                      fontWeight: 700,
+                                      fontSize: '0.95rem',
+                                    }}
+                                  >
                                     {guest.numberOfShares}
                                   </Typography>
                                   {guest.bank && (
-                                    
+
                                     <Typography variant="caption" sx={{ color: '#64748b' }}>
                                       • {guest.bank}
                                     </Typography>
@@ -597,6 +606,22 @@ export default function CheckInPage() {
 
                 {/* Big Action Buttons */}
                 <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setEditGuestOpen(true)}
+                    startIcon={<Edit size={18} />}
+                    sx={{
+                      borderColor: '#0284c7',
+                      color: '#0284c7',
+                      fontWeight: 700,
+                      py: 1,
+                      px: 2,
+                      '&:hover': { bgcolor: 'rgba(2, 132, 199, 0.05)' }
+                    }}
+                  >
+                    Modifier (NIN, RC, NIF...)
+                  </Button>
+
                   <Button
                     variant="outlined"
                     onClick={() => handlePrintBadge(selectedGuest)}
@@ -802,6 +827,21 @@ export default function CheckInPage() {
         open={newGuestOpen}
         onClose={() => setNewGuestOpen(false)}
         onSubmit={handleCreateWalkIn}
+      />
+
+      {/* Edit Guest Modal */}
+      <EditGuestModal
+        open={editGuestOpen}
+        onClose={() => setEditGuestOpen(false)}
+        guest={selectedGuest}
+        onSaved={(updated) => {
+          setSelectedGuest((prev) => ({ ...prev, ...updated }));
+          setFeedback({
+            type: 'success',
+            message: `Informations de ${updated.lastNameOrCompany} mises à jour avec succès.`,
+            details: `NIN: ${updated.nationalIdentificationNumber || '-'} • RC: ${updated.registrationNumber || '-'} • NIF: ${updated.taxIdentificationNumber || '-'}`
+          });
+        }}
       />
 
       {/* Proxy / Representative Check-in Modal */}
